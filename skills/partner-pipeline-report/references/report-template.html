@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>[Report title]</title>
+<style>
+  /*
+    Neutral, brand-agnostic report template for the partner-pipeline-report skill.
+    System font stack (no embedded/web font, so it works anywhere with zero external
+    requests). Theme-aware: follows the reader's OS light/dark preference automatically,
+    with data-theme overrides available if a page needs a manual toggle.
+    If the user has their own document style/template, use that instead of this one.
+  */
+  :root{
+    --bg: #FFFFFF; --text: #14181D; --muted: #5B6470; --border: #DDE2E8;
+    --accent: #2C5FD1; --accent-soft: #EEF2FC; --accent-on: #FFFFFF;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color-scheme: light dark;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg: #10151B; --text: #E7EBF0; --muted: #97A2AF; --border: #29323C; --accent: #6C97F2; --accent-soft: #182238; --accent-on: #0B121C; }
+  }
+  :root[data-theme="dark"]{ --bg: #10151B; --text: #E7EBF0; --muted: #97A2AF; --border: #29323C; --accent: #6C97F2; --accent-soft: #182238; --accent-on: #0B121C; }
+  :root[data-theme="light"]{ --bg: #FFFFFF; --text: #14181D; --muted: #5B6470; --border: #DDE2E8; --accent: #2C5FD1; --accent-soft: #EEF2FC; --accent-on: #FFFFFF; }
+
+  *{ box-sizing: border-box; }
+  html, body{ margin: 0; padding: 0; }
+  body{ background: var(--bg); color: var(--text); font-family: var(--font); -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+
+  .doc{ max-width: 960px; margin: 0 auto; padding: clamp(28px, 5vw, 56px) 24px 64px; display: flex; flex-direction: column; gap: 26px; }
+
+  .doc-header{ display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 14px; font-size: 0.85rem; }
+  .doc-header .doc-meta{ color: var(--muted); }
+
+  .doc-title{ font-size: clamp(1.4rem, 2.6vw, 1.85rem); line-height: 1.28; font-weight: 600; margin: 0; text-wrap: balance; color: var(--text); max-width: 46ch; }
+
+  .section-heading{ font-size: 1.15rem; font-weight: 600; margin: 4px 0 0; color: var(--text); }
+  .section-sub{ font-size: 0.82rem; color: var(--muted); margin: -18px 0 0; }
+
+  .bluf{ background: var(--accent-soft); border-left: 3px solid var(--accent); padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; }
+  .bluf-label{ font-size: 0.75rem; letter-spacing: 0.02em; font-weight: 600; color: var(--accent); }
+  .bluf p{ margin: 0; font-size: 1.02rem; line-height: 1.6; color: var(--text); max-width: 78ch; }
+
+  .doc-body p{ margin: 0 0 14px; font-size: 0.96rem; line-height: 1.7; color: var(--text); max-width: 78ch; }
+  .doc-body p:last-child{ margin-bottom: 0; }
+
+  table.data{ width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  table.data th{ text-align: left; font-weight: 600; color: var(--muted); font-size: 0.74rem; padding: 8px 10px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data td{ padding: 9px 10px; border-bottom: 1px solid var(--border); vertical-align: top; color: var(--text); }
+  table.data tr:last-child td{ border-bottom: none; }
+  table.data td.num{ text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  table.data td.muted, table.data span.muted{ color: var(--muted); }
+  table.data tr.total td{ font-weight: 600; border-top: 1px solid var(--text); }
+  .table-wrap{ overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+  .table-wrap table.data{ border: none; }
+  .table-wrap table.data th:first-child, .table-wrap table.data td:first-child{ padding-left: 14px; }
+  .table-wrap table.data th:last-child, .table-wrap table.data td:last-child{ padding-right: 14px; }
+
+  .company{ display: flex; flex-direction: column; gap: 10px; padding: 20px 0 4px; border-top: 1px solid var(--border); }
+  .company:first-of-type{ border-top: none; padding-top: 0; }
+  .company-head{ display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .company-name{ font-size: 1.05rem; font-weight: 600; color: var(--text); }
+  .company-tier{ font-size: 0.72rem; color: var(--accent); border: 1px solid var(--accent); border-radius: 2px; padding: 2px 8px; white-space: nowrap; }
+  .status-row{ display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 0.82rem; color: var(--muted); }
+  .status-row b{ color: var(--text); font-weight: 500; }
+
+  .flag{ font-size: 0.86rem; line-height: 1.6; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--text); max-width: 78ch; }
+
+  .doc-footer{ font-size: 0.8rem; color: var(--muted); padding-top: 16px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 700px){
+    .status-row{ flex-direction: column; gap: 3px; }
+  }
+
+  @media print{
+    :root{ --bg: #FFFFFF; --text: #14181D; --muted: #5B6470; --border: #DDE2E8; --accent: #2C5FD1; --accent-soft: #EEF2FC; --accent-on: #FFFFFF; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    @page{ margin: 16mm 14mm; }
+    .company{ break-inside: avoid; }
+    .bluf, .flag{ break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="doc">
+
+  <div class="doc-header">
+    <span class="doc-kicker">[Report series/category, e.g. "Partner Pipeline Briefing"]</span>
+    <span class="doc-meta">[Date] · Prepared for [Stakeholder]</span>
+  </div>
+
+  <h1 class="doc-title">[Headline stating the conclusion, not the topic]</h1>
+
+  <div class="bluf">
+    <span class="bluf-label">Bottom line</span>
+    <p>[Two to four sentences: the actual takeaway across all companies, stated plainly — combined
+    pipeline figures, which partners are healthy vs. at risk, and any standout whitespace or
+    program gap. This is the only part some readers will get to.]</p>
+  </div>
+
+  <div>
+    <h2 class="section-heading">Combined summary</h2>
+    <p class="section-sub">[One line on data provenance/verification, e.g. "All figures pulled live
+    from CRM, verified [date]. Open pipeline excludes all closed stages."]</p>
+  </div>
+
+  <div class="table-wrap">
+    <table class="data">
+      <tr><th>Partner</th><th>Partner tier / status</th><th>Partner manager</th><th class="num">Open pipeline</th><th class="num"># open</th><th class="num">Closed-won (lifetime)</th></tr>
+      <!-- One row per company -->
+      <tr><td>[Company]</td><td>[Tier · Status]</td><td>[Manager name]</td><td class="num">$[amount]</td><td class="num">[count]</td><td class="num">$[amount]</td></tr>
+      <tr class="total"><td>Combined</td><td></td><td></td><td class="num">$[amount]</td><td class="num">[count]</td><td class="num">$[amount]</td></tr>
+    </table>
+  </div>
+  <!-- Add a footnote line here if any cross-company de-duplication was needed (e.g. a shared/bundled opportunity). -->
+
+  <!-- Repeat this block once per company -->
+  <div class="company">
+    <div class="company-head">
+      <span class="company-name">[Company Name]</span>
+      <span class="company-tier">[Tier · Status]</span>
+    </div>
+    <div class="status-row"><span>Partner manager: <b>[Name, Title]</b></span><span>Open pipeline: <b>$[amount]</b> / [count] opps</span><span>Closed-won: <b>$[amount]</b> / [count] opps</span></div>
+    <p class="doc-body"><p>[2-3 sentences of public-knowledge company context tied to the report's theme.]</p></div>
+    <!-- Optional: only include when there's something worth flagging (missing manager, zero closed-won, duplicate accounts, a whitespace angle, etc.) -->
+    <div class="flag">[The specific, notable thing about this partner's status or pipeline worth calling out.]</div>
+    <div class="table-wrap">
+      <table class="data">
+        <tr><th>Opportunity</th><th>Account</th><th>Stage</th><th class="num">Amount</th><th>Close</th><th>Named contact</th></tr>
+        <tr><td>[Opportunity name]</td><td>[Customer account]</td><td>[Stage]</td><td class="num">$[amount]</td><td>[YYYY-MM-DD]</td><td>[Name, Title]</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="doc-footer">Prepared by [Name] — [Team] · Source: [CRM/system], live-verified [date] · Distribution: [Internal/External] · v1</div>
+
+</div>
+
+</body>
+</html>
