@@ -1,0 +1,10 @@
+{
+  "validated_by_skill": true,
+  "skill": "plugin-checklist",
+  "validation_date": "2026-07-20",
+  "validation_result": "PASS",
+  "critical_issues": 0,
+  "warnings": 1,
+  "plugin_name": "wwt-partner-pipeline-report",
+  "version": "1.0.0"
+}
