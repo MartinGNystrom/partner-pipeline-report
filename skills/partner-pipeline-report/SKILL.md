@@ -1,5 +1,4 @@
 ---
-name: partner-pipeline-report
 description: Build a Salesforce partner-pipeline report (partner status, sponsors/named contacts, open and lifetime pipeline) for a list of technology/OEM partner companies, using parallel per-company agents plus a QA verification pass, then publish it as a clean standalone report. Use when the user asks for a partner report, partner pipeline, or "find Salesforce opportunities for these companies" naming a list of vendor/partner companies.
 ---
 

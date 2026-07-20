@@ -23,7 +23,7 @@ Technology (WWT).
 
 ```
 /plugin marketplace add MartinGNystrom/partner-pipeline-report
-/plugin install partner-pipeline-report@partner-pipeline-report
+/plugin install wwt-partner-pipeline-report@wwt-partner-pipeline-report
 ```
 
 ## Usage

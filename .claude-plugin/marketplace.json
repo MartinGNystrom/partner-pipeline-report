@@ -1,14 +1,14 @@
 {
-  "name": "partner-pipeline-report",
+  "name": "wwt-partner-pipeline-report",
   "owner": {
     "name": "Martin Nystrom",
     "email": "martin.nystrom@wwt.com"
   },
-  "description": "Self-hosted marketplace for the partner-pipeline-report plugin.",
+  "description": "Self-hosted marketplace for the wwt-partner-pipeline-report plugin.",
   "version": "1.0.0",
   "plugins": [
     {
-      "name": "partner-pipeline-report",
+      "name": "wwt-partner-pipeline-report",
       "source": "./",
       "description": "Build a Salesforce partner-pipeline report (partner status, named sponsors, open + lifetime pipeline) via parallel subagents + QA, published as a clean standalone report.",
       "version": "1.0.0",
