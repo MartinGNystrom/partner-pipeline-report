@@ -168,11 +168,16 @@ they" — distinct from the deal-momentum narrative above. Sources, in the WWT o
 5. **If a subagent's final report doesn't actually contain the requested findings** (e.g. it
    trails off into a status update instead of synthesizing), message it directly asking it to
    report what it already found — don't discard its work and re-run from scratch.
-6. **Launch one QA subagent** once all per-company subagents are back (template in
-   `references/fork-prompt-templates.md`): paste the fully compiled dataset, have it check each
-   company's arithmetic, compute the correct cross-company combined totals with any shared
-   opportunity de-duplicated, spot-re-run one live aggregate query per company to catch drift, and
-   flag anything internally inconsistent. **Use QA's corrected numbers**, not the pre-QA draft.
+6. **Always launch a separate QA subagent** once the data is compiled (template in
+   `references/fork-prompt-templates.md`) — this step is never skipped, including for a single
+   company handled directly rather than via a fork in step 4. Paste the fully compiled dataset,
+   have it check the arithmetic, compute the correct cross-company combined totals with any shared
+   opportunity de-duplicated (when there's more than one company), spot-re-run at least one live
+   query to catch drift, and flag anything internally inconsistent — including a large discrepancy
+   between a CRM-derived number and any other reported figure a document search turned up (e.g. a
+   vendor's own reported bookings vs. a SOQL Closed-Won total), which is worth an explanation
+   attempt rather than presenting both silently. **Use QA's corrected numbers**, not the pre-QA
+   draft.
 7. **Build the report.** Start from `references/report-template.html` — a self-contained,
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
@@ -193,9 +198,13 @@ they" — distinct from the deal-momentum narrative above. Sources, in the WWT o
 
 - This is read-only everywhere — CRM, ZoomInfo, documents, meetings, and Slack are all queried for
   information only; nothing is written, posted, or edited in any of them.
-- Company count of 1-2 doesn't need the multi-subagent treatment; do the SOQL/SOSL (and any
-  enrichment lookups) directly. The parallel-subagent approach earns its keep once you're covering
-  enough companies (roughly 4+) that a QA pass catching one arithmetic slip is worth the overhead.
+- Company count of 1-2 doesn't need the multi-subagent *research* treatment; do the SOQL/SOSL (and
+  any enrichment lookups) directly yourself. The parallel-research-subagent approach earns its keep
+  once you're covering enough companies (roughly 4+) that splitting the legwork across forks is
+  worth the overhead. **The QA subagent is not part of that tradeoff — always run it, even for one
+  company.** It has caught real errors on single-digit-company runs before (an arithmetic slip, and
+  a large unexplained discrepancy between a CRM total and a vendor-reported figure), and it's cheap
+  relative to the cost of publishing a wrong number.
 - Not every environment has every connector (ZoomInfo, Glean, Slack, Webex, Google Drive, etc.).
   Missing connectors just mean a thinner narrative for that section, not a failed report — CRM
   data alone (partner status + pipeline) is still a complete, useful report on its own.

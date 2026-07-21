@@ -90,35 +90,51 @@ Notes from the first run:
   lookup field on it, only a link up to `WWT_Skill__c`. If a subagent tries to match one to
   `<Company>` by name, it should say so explicitly as an unverified guess, not a finding.
 
-## QA subagent prompt (launched once, after all per-company subagents report back)
+## QA subagent prompt (always launched, even for a single company)
+
+This is a standing rule, not a judgment call based on company count: run this pass every time,
+whether the report covers one company or a dozen. Skip nothing about it just because there's no
+cross-company total to compute.
 
 ```
 QA pass on the compiled Salesforce partner-pipeline data for the <audience> report covering
-<N> partners: <list>. <N> parallel subagents each gathered per-company data (pipeline aggregates
-by stage, top open opportunities, named contacts, partner-status fields). Here is the compiled
-dataset to verify:
+<N> partner(s): <list>. Here is the compiled dataset to verify:
 
-<paste the full compiled per-company dataset: tier/status/manager, stage-by-stage pipeline
-numbers, claimed open-pipeline totals, and any cross-company shared/bundled opportunity Ids>
+<paste the full compiled dataset: tier/status/manager, stage-by-stage pipeline numbers, claimed
+open-pipeline totals, top opportunities with contacts, any enrichment findings (certs/awards/
+labs/capabilities), and any cross-company shared/bundled opportunity Ids if N > 1>
 
 YOUR TASKS:
 1. Arithmetic check: verify each company's "open total" (sum of non-Closed stages) matches the
    stage-by-stage numbers given above. Show your math and flag any mismatch.
-2. Compute the combined open pipeline across all companies, correctly de-duplicating any shared
-   opportunity (state the Id and amount) so it's counted only ONCE in the combined total.
-3. Compute combined lifetime Closed Won across all companies.
-4. Using the CRM MCP tools, independently re-run one spot-check aggregate query per company
-   (SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<company>%'
+2. If N > 1: compute the combined open pipeline across all companies, correctly de-duplicating any
+   shared opportunity (state the Id and amount) so it's counted only ONCE in the combined total,
+   and compute combined lifetime Closed Won across all companies.
+3. Using the CRM MCP tools, independently re-run at least one spot-check aggregate query per
+   company (SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<company>%'
    GROUP BY StageName) and confirm the numbers above are still accurate right now (data may have
    changed). Flag any company where live data differs from what's stated above.
-5. Sanity-check for other issues: any indication of a missed additional Account for any company
-   (differently-named or regional entity)? Note anything internally inconsistent or suspicious.
+4. Spot-check 2-3 top opportunities and their named contacts against live data to confirm nothing
+   was misquoted, and re-verify any certifications/enrichment finding that came from a direct query
+   (e.g. Certifications_and_Specializations__c).
+5. If any enrichment source reported a figure that doesn't reconcile with the CRM-derived number
+   (e.g. a vendor's own reported "bookings" total vs. a SOQL Closed-Won sum), don't let both numbers
+   sit side by side unexamined — attempt an explanation (different measurement definitions? opps
+   that reference the product without the company name in Opportunity.Name, missed by a Name LIKE
+   sweep?) and report your confidence in it. It's fine to conclude "no clean explanation found" if
+   that's the honest answer.
+6. Sanity-check for other issues: any indication of a missed additional Account for any company
+   (differently-named or regional entity)? Any close date or figure that looks like a data-entry
+   artifact rather than a real forecast? Note anything internally inconsistent or suspicious.
 
-Report back concisely (under 400 words): pass/fail per company's arithmetic, the corrected
-combined totals, and any live-data discrepancies found. This is a verification pass only — do not
-rewrite the report itself.
+Report back concisely (under 400 words): pass/fail on the arithmetic, live-data confirmation
+results, the contact/enrichment spot-check outcome, any discrepancy explanation attempted, and any
+other flags. This is a verification pass only — do not rewrite the report itself.
 ```
 
-This QA pass caught a genuine $200 arithmetic error in the first compiled draft (one company's
-open-pipeline total) — it earns its keep. Always apply the corrected numbers from QA before
-writing the report, not the pre-QA draft numbers.
+This QA pass has caught real issues even on small runs: a genuine $200 arithmetic error in a
+six-company draft's open-pipeline total, and — on a single-company CrowdStrike run — a large,
+real discrepancy between WWT's own internal "CrowdStrike OEM Bookings" figures and the SOQL
+Closed-Won total that was worth investigating rather than silently reporting both. Always apply
+the corrected numbers and any discrepancy finding from QA before writing the report, not the
+pre-QA draft.
