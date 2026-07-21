@@ -67,6 +67,12 @@
 
   .flag{ font-size: 0.86rem; line-height: 1.6; padding: 10px 14px; border-left: 3px solid var(--accent); background: var(--accent-soft); color: var(--text); max-width: 78ch; }
 
+  .signals{ margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; max-width: 78ch; }
+  .signals-label{ font-size: 0.74rem; letter-spacing: 0.02em; font-weight: 600; color: var(--muted); display: block; margin: 0 0 6px -18px; padding-left: 18px; }
+  .signals li{ font-size: 0.88rem; line-height: 1.55; color: var(--text); }
+  .signals li::marker{ color: var(--muted); }
+  .signals .src{ color: var(--muted); font-size: 0.78rem; }
+
   .doc-footer{ font-size: 0.8rem; color: var(--muted); padding-top: 16px; border-top: 1px solid var(--border); }
 
   @media (max-width: 700px){
@@ -123,8 +129,18 @@
       <span class="company-tier">[Tier · Status]</span>
     </div>
     <div class="status-row"><span>Partner manager: <b>[Name, Title]</b></span><span>Open pipeline: <b>$[amount]</b> / [count] opps</span><span>Closed-won: <b>$[amount]</b> / [count] opps</span></div>
-    <p class="doc-body"><p>[2-3 sentences of public-knowledge company context tied to the report's theme.]</p></div>
-    <!-- Optional: only include when there's something worth flagging (missing manager, zero closed-won, duplicate accounts, a whitespace angle, etc.) -->
+    <div class="doc-body"><p>[2-3 sentences of public-knowledge company context tied to the report's theme, plus whatever
+    ZoomInfo/document/meeting/Slack signals were found — a fuller narrative, not just a CRM
+    number.]</p></div>
+    <!-- Optional: only include this block when at least one enrichment source (ZoomInfo, docs,
+         meetings, Slack) turned up something concrete for this company. Omit entirely if none
+         applied — don't pad every company with a "nothing found" bullet. -->
+    <ul class="signals">
+      <span class="signals-label">Recent signals</span>
+      <li>[Signal from ZoomInfo, e.g. funding/leadership/expansion news] <span class="src">— ZoomInfo</span></li>
+      <li>[Signal from an internal doc, meeting, or Slack — summarized, not quoted verbatim] <span class="src">— [Slack/Meeting/Doc]</span></li>
+    </ul>
+    <!-- Optional: only include when there's something worth flagging (missing manager, zero closed-won, duplicate accounts, a whitespace angle, a relationship-health risk surfaced in Slack, etc.) -->
     <div class="flag">[The specific, notable thing about this partner's status or pipeline worth calling out.]</div>
     <div class="table-wrap">
       <table class="data">

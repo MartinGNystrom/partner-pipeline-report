@@ -2,8 +2,9 @@
 
 These are the actual prompts used for the first run of this skill (2026-07-20, six partners:
 Claroty, Filigran, Doppel, Command Zero, Keyfactor, BlackCloak, for a stakeholder-facing partner
-report at WWT). Reuse the structure, swap in the per-company facts discovered during the setup
-pass.
+report at WWT), plus the enrichment tasks added the same day to pull in ZoomInfo, documents,
+meetings, and Slack. Reuse the structure, swap in the per-company facts discovered during the
+setup pass.
 
 ## Per-company subagent prompt (one per partner, launched together in a single message)
 
@@ -31,8 +32,24 @@ Your job:
    Partner_Priority__c).
 5. Write 2-3 sentences describing <Company>'s relevance to <the report's theme, e.g.
    cybersecurity/AI/quantum> — this is public-knowledge company context, not from CRM.
+6. If a ZoomInfo connector is available (search with ToolSearch for "ZoomInfo company" if
+   unsure), pull 2-4 bullet points of recent firmographic/buying-intent signals for <Company>
+   (funding, leadership changes, expansion, layoffs, product launches) via
+   enrich_company_signals/enrich_news/enrich_scoops. Skip this step entirely if no ZoomInfo tools
+   are found — don't treat it as a failure.
+7. If a documents connector is available (e.g. Glean — search with ToolSearch for "Glean search"
+   if unsure), search internal docs for "<Company>" and note anything materially relevant (sales
+   collateral, competitive notes, QBR/EBR decks) by title, with a one-line summary of the relevant
+   point — don't quote large blocks of text.
+8. If a meetings connector is available (Glean meeting_lookup, a Webex Meetings connector, or
+   similar), look for recent meetings mentioning <Company> and summarize key takeaways/action
+   items at a high level.
+9. If a Slack connector is available, search for recent internal mentions of "<Company>" and
+   summarize any relationship-health signals (blockers, escalations, wins) found. Paraphrase,
+   don't quote messages verbatim, and only include something if it's clearly fine to surface in a
+   shared report — when in doubt, leave it out.
 
-Return a concise structured report (under 350 words). Do not write any files or publish
+Return a concise structured report (under 450 words). Do not write any files or publish
 anything — just report findings back in your final message.
 ```
 
@@ -50,6 +67,10 @@ Notes from the first run:
   having done the tool calls. If a subagent's final message doesn't contain the actual requested
   data, message it directly asking it to synthesize and report the findings it already gathered —
   don't re-run its tool calls from scratch in a new agent.
+- Tasks 6-9 (ZoomInfo/documents/meetings/Slack) are additive, not required — a subagent should say
+  "no ZoomInfo connector found" or similar and move on rather than treating a missing connector as
+  a blocker. Don't pad the report with a boilerplate "not available" line for every company if it
+  just adds noise; a brief note is only worth including where the gap actually matters.
 
 ## QA subagent prompt (launched once, after all per-company subagents report back)
 

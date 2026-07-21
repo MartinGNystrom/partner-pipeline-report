@@ -8,13 +8,16 @@ description: Build a Salesforce partner-pipeline report (partner status, sponsor
 
 Given a list of partner/vendor companies (e.g. cybersecurity, AI, or quantum vendors an
 organization resells or integrates), produce a report covering, per company: CRM partner status
-(tier, program status, partner manager), named sponsors/economic buyers on top deals, and pipeline
-(open + lifetime closed-won), then publish it.
+(tier, program status, partner manager), named sponsors/economic buyers on top deals, pipeline
+(open + lifetime closed-won), and — where those sources are available — a fuller narrative pulled
+from ZoomInfo firmographics/signals, internal documents, meeting transcripts, and Slack, then
+publish it.
 
 First built 2026-07-20 for a six-company report (Claroty, Filigran, Doppel, Command Zero,
-Keyfactor, BlackCloak) at World Wide Technology (WWT). See `references/fork-prompt-templates.md`
-for the exact prompts used and lessons learned from that run, and
-`references/report-template.html` for a ready-to-adapt report template.
+Keyfactor, BlackCloak) at World Wide Technology (WWT); extended 2026-07-20 to pull in ZoomInfo,
+documents, meetings, and Slack alongside CRM. See `references/fork-prompt-templates.md` for the
+exact prompts used and lessons learned from that run, and `references/report-template.html` for a
+ready-to-adapt report template.
 
 ## Key CRM facts (Salesforce, via an MCP connector)
 
@@ -64,6 +67,50 @@ CRM pattern worth checking for first.
 - Salesforce URLs are safe to hand-construct from a confirmed Id once you have it:
   `https://<org>.lightning.force.com/lightning/r/Opportunity/{Id}/view`.
 
+## Enrichment sources beyond CRM (ZoomInfo, documents, meetings, Slack)
+
+CRM tells you the deal facts (status, pipeline, named buyers) but not the *story* — momentum,
+relationship health, competitive pressure, what internal stakeholders actually think. Layer these
+in when available to turn a numbers table into a fuller narrative per company. None of these are
+required for the skill to work; treat each as optional and degrade gracefully.
+
+- **Discover what's actually connected first.** Tool availability varies by install. Run
+  `ToolSearch` for each category (e.g. `"ZoomInfo company"`, `"Glean search"`, `"Slack search"`,
+  `"Webex meeting"`, `"Google Drive"`) before assuming a source exists. Skip any category with no
+  matching tools rather than failing the whole report over a missing connector — note the gap
+  briefly in the report instead (e.g. "no Slack connector available for this run") only if it
+  materially matters, not as boilerplate on every section.
+- **ZoomInfo** (`mcp__*ZoomInfo*` tools): use `search_companies`/`enrich_companies` to confirm the
+  right company record, then `enrich_company_signals`, `enrich_news`, and `enrich_scoops` for
+  recent firmographic and buying-intent signals (funding rounds, leadership changes, expansion,
+  layoffs, product launches). `get_gtm_context` can surface how the org's own GTM data already
+  frames the account. Pull 2-4 bullet points of what's genuinely notable — not a data dump.
+- **Internal documents** (commonly via Glean, `mcp__*Glean*__search` / `read_document`, or a
+  Google Drive connector): search for the partner's name across internal docs — sales collateral,
+  competitive positioning, QBR/EBR decks, partnership agreements. Cite what you find by title
+  (and link/ID if the platform provides one) rather than quoting large blocks of text; summarize
+  the relevant point in one line.
+- **Meeting transcripts/summaries** (Glean `meeting_lookup`, a Webex Meetings connector's
+  `list-recordings`/`get-meeting-summary`, or similar): look for recent meetings involving the
+  partner. Summarize key takeaways, decisions, and action items at a high level — attendee names
+  are fine to include when they're already the named CRM contacts/partner managers in this report,
+  but don't transcribe verbatim exchanges.
+- **Slack** (`mcp__*Slack*__slack_search_public_and_private` / `slack_search_channels` /
+  `slack_read_channel` / `slack_read_thread`): search for recent internal mentions of the partner
+  name. This is usually the best source for relationship-health signals that never make it into
+  CRM — deal blockers, escalations, internal frustration or enthusiasm, a partner manager flagging
+  a renewal risk. **Summarize the substance, don't quote people verbatim** unless the message is
+  clearly fine to reproduce in a shared report (e.g. an official program announcement) — internal
+  chat is written assuming an internal, ephemeral audience, and a published report has a longer
+  shelf life and a different (sometimes external) readership than the original channel. When in
+  doubt, paraphrase and attribute loosely ("the partner manager flagged renewal risk in Slack") or
+  leave a detail out rather than embarrass or misrepresent someone.
+- **All of this is read-only** — searching/reading only, never posting to Slack, editing docs, or
+  writing to any of these systems.
+- **Fold enrichment into the per-company subagent** (workflow step 4) rather than running it as a
+  separate pass — each subagent already owns one company end-to-end, so it's the natural place to
+  gather CRM facts and the wider narrative together and hand back one coherent picture.
+
 ## Workflow
 
 1. **Resolve accounts.** For each company name given, SOSL-search Account as above and confirm
@@ -77,10 +124,12 @@ CRM pattern worth checking for first.
 4. **Launch one fork/subagent per company, all in a single message** (see
    `references/fork-prompt-templates.md` for the exact prompt template) to verify the aggregates,
    pull the top 5 open opportunities, look up `OpportunityContactRole` sponsors on those
-   opportunities, note any other populated partner-status fields, and write a 2-3 sentence
-   public-knowledge company blurb tied to the report's theme. A forked subagent inherits the
-   parent's context, so it only needs its own company's already-known facts plus clear scope
-   boundaries (explicitly rule out any name-collision or shared-opportunity risk already spotted).
+   opportunities, note any other populated partner-status fields, pull whatever ZoomInfo/document/
+   meeting/Slack signals are available (see the enrichment section above), and write a short
+   narrative blurb combining public-knowledge company context with what internal sources actually
+   show. A forked subagent inherits the parent's context, so it only needs its own company's
+   already-known facts plus clear scope boundaries (explicitly rule out any name-collision or
+   shared-opportunity risk already spotted).
 5. **If a subagent's final report doesn't actually contain the requested findings** (e.g. it
    trails off into a status update instead of synthesizing), message it directly asking it to
    report what it already found — don't discard its work and re-run from scratch.
@@ -92,10 +141,13 @@ CRM pattern worth checking for first.
 7. **Build the report.** Start from `references/report-template.html` — a self-contained,
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
-   one section per company (status line, 2-3 sentence blurb, a callout for anything notable —
-   missing partner manager, zero closed-won, duplicate accounts, a whitespace angle, etc. — and a
-   top-opportunities table with named contacts), and a footer byline. If the user has their own
-   preferred document style/template, follow that instead.
+   one section per company (status line, a short narrative blending public company context with
+   any ZoomInfo/document/meeting/Slack signals found, a callout for anything notable — missing
+   partner manager, zero closed-won, duplicate accounts, a whitespace angle, a relationship-health
+   flag surfaced from Slack, etc. — and a top-opportunities table with named contacts), and a
+   footer byline. If the user has their own preferred document style/template, follow that
+   instead. Keep the same summarize-don't-quote judgment from the enrichment step when writing
+   this up — a published report is not the place for a verbatim internal Slack message.
 8. **Publish the report.** If the user has access to an internal page-hosting service (e.g. WWT's
    my-pages, reachable via its MCP connector), publish there and share the resulting URL — that's
    the actual deliverable, don't wait to be asked to share it. Otherwise, write the finished HTML
@@ -103,10 +155,14 @@ CRM pattern worth checking for first.
 
 ## Notes
 
-- This is read-only CRM work — no writes to Salesforce at any point.
-- Company count of 1-2 doesn't need the multi-subagent treatment; do the SOQL/SOSL directly. The
-  parallel-subagent approach earns its keep once you're covering enough companies (roughly 4+)
-  that a QA pass catching one arithmetic slip is worth the overhead.
+- This is read-only everywhere — CRM, ZoomInfo, documents, meetings, and Slack are all queried for
+  information only; nothing is written, posted, or edited in any of them.
+- Company count of 1-2 doesn't need the multi-subagent treatment; do the SOQL/SOSL (and any
+  enrichment lookups) directly. The parallel-subagent approach earns its keep once you're covering
+  enough companies (roughly 4+) that a QA pass catching one arithmetic slip is worth the overhead.
+- Not every environment has every connector (ZoomInfo, Glean, Slack, Webex, Google Drive, etc.).
+  Missing connectors just mean a thinner narrative for that section, not a failed report — CRM
+  data alone (partner status + pipeline) is still a complete, useful report on its own.
 - If asked to update an existing partner report rather than create a new one, find the existing
   page (e.g. by name/slug on the hosting service) and upload a new version to it instead of
   creating a new one.
