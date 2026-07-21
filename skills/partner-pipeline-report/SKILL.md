@@ -114,16 +114,38 @@ required for the skill to work; treat each as optional and degrade gracefully.
 ## Certifications, awards, labs, and service capabilities
 
 A separate enrichment pass covering "what can this partner actually do, and how credentialed are
-they" — distinct from the deal-momentum narrative above. Sources, in the WWT org:
+they" — distinct from the deal-momentum narrative above. **Important scope note, corrected after a
+first pass got this wrong:** "certifications and awards" here means **credentials WWT itself holds
+or has won through that vendor's partner program** (e.g. "WWT is a CrowdStrike Focused Partner" or
+"WWT named CrowdStrike Flex Partner of the Year") — not the vendor's own public certifications or
+industry accolades as a company. Those are two entirely different things pointing at different
+sources; don't conflate them.
 
-- **Certifications** (Salesforce): `Certifications_and_Specializations__c` has an `Account__c`
-  lookup straight to the partner Account — `SELECT Vendor__c, Certification_or_Specialization_Type__c
-  FROM Certifications_and_Specializations__c WHERE Account__c = '<partnerAccountId>'`. **Caveat:**
-  this object's `Vendor__c` picklist is capped to a small set of legacy hardware/software vendors
-  (Cisco, Citrix, EMC, HP, NetApp, VMware) — it looks like an older object that predates most
-  current cybersecurity/AI/quantum partners. Expect zero rows for a modern partner and say so as
-  "no legacy certification record on file," not "this partner has no certifications" — that's a
-  claim only public-knowledge or the vendor's own materials can support.
+- **The authoritative source is WWT's own public partner page**, `wwt.com/partner/<vendor-slug>/
+  expertise` (read via `Glean read_document` or a web fetch — it's public). It carries a clean
+  "`<Vendor>` Certifications and Awards" list with named credential + region + year, e.g.
+  "CrowdStrike Focused Partner — Americas — 2020" and "CrowdStrike Flex Partner of the Year —
+  Global — 2024." The companion `wwt.com/partner/<vendor-slug>/overview` page usually has the named
+  WWT practice team (useful cross-check against the CRM `Partner_Manager__c`/Account Owner) plus an
+  "About `<Vendor>` & WWT" blurb and recent partner-branded articles/blogs — a good source for the
+  **other service capabilities** part of this section too, instead of guessing from general public
+  knowledge.
+- **A secondary, curated cross-check**: `wwt.com/corporate/awards-and-recognitions/overview` lists
+  per-vendor certification counts, but only for a handful of WWT's largest infrastructure OEMs
+  (Cisco, Dell, HPE, NetApp, F5, Intel, NVIDIA, Microsoft, Palo Alto Networks as of this writing) —
+  most partners, including most cybersecurity/AI vendors, won't appear there. Don't treat its
+  absence as meaningful; the per-vendor `/expertise` page is the one that matters.
+- A `WebSearch` for a public press release (e.g. `"World Wide Technology" <vendor> "partner of the
+  year"`) is a good corroborating source and often surfaces the exact announcement date/quote — use
+  it to double check or add color to what the `/expertise` page states, not as the primary source.
+- **Legacy Salesforce object**: `Certifications_and_Specializations__c` (`Account__c` lookup to the
+  partner Account — `SELECT Vendor__c, Certification_or_Specialization_Type__c FROM
+  Certifications_and_Specializations__c WHERE Account__c = '<partnerAccountId>'`) is the same
+  underlying concept (a WWT-held certification/specialization tied to a vendor relationship) but
+  it's an old object whose `Vendor__c` picklist is capped to a small set of legacy hardware vendors
+  (Cisco, Citrix, EMC, HP, NetApp, VMware). Expect zero rows for any modern partner and say so as
+  "no legacy record on file," not "this partner has no certifications" — the `/expertise` page
+  above is the real answer, this is just a secondary data point.
 - **`Partner_Skill__c`/`WWT_Skill__c`/`WWT_Parent_Skill__c`** look relevant by name (a partner/skill
   matrix with `Status__c` of Pending/Approved/Rejected, `Location__c`/`US_Locations__c`, an
   `Is_Active_Partner__c` flag) but **`Partner_Skill__c` has no confirmed lookup field to Account** —
@@ -131,17 +153,12 @@ they" — distinct from the deal-momentum narrative above. Sources, in the WWT o
   `WWT_Skill__c`. Treat any attempt to tie a `Partner_Skill__c` row to a specific partner company as
   unverified (probably a name-text match at best) until you've confirmed the actual linkage against
   live data — don't present it as a solid finding the way the Account-level fields are.
-- **Awards** (ZoomInfo): `search_scoops`/`enrich_company_signals` support `scoopTypes: ["Award"]`
-  (also worth pairing with `"Product Launch"` and `"Partnership"`) for industry-recognition signals
-  — this is public-knowledge/market intelligence, not a WWT-internal record of any kind.
-- **Labs** (Glean): there is no "lab" object in Salesforce. WWT's Advanced Technology Center content
-  is reachable via `Glean search` with `app: "atc platform"` (labeled "Cisco Lab" in the connector's
-  own app-filter description, but not necessarily limited to Cisco in practice) — search the
-  partner's name there for hands-on lab/demo environment content.
-- **Other service capabilities**: fall back to public-knowledge context (same treatment as the
-  company blurb) for what WWT's own practice/service catalog offers around that partner's product —
-  implementation, managed services, professional services — since there's no confirmed
-  single-object source for this in CRM.
+- **Labs**: there is no "lab" object in Salesforce. WWT's Advanced Technology Center content is
+  reachable two ways — `Glean search` with `app: "atc platform"` (labeled "Cisco Lab" in the
+  connector's own app-filter description, but not limited to Cisco in practice), or directly reading
+  `wwt.com/partner/<vendor-slug>/overview`, which usually has a "`<Vendor>` in the ATC" section
+  listing specific named labs (with launch counts), integration labs with adjacent vendors, and any
+  Cyber Range/capture-the-flag events.
 - Fold this into the same per-company subagent as the other enrichment work (workflow step 4) —
   don't spin up a fifth pass just for this.
 

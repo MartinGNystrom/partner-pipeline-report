@@ -1,7 +1,7 @@
 {
   "name": "wwt-partner-pipeline-report",
   "displayName": "Partner Pipeline Report",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Build a Salesforce partner-pipeline report (partner status, named sponsors, open + lifetime pipeline, ZoomInfo/document/meeting/Slack signals, and certifications/awards/labs/service capabilities where available) for any list of partner/vendor companies, using parallel per-company subagents plus a QA verification pass, then publish a clean standalone report.",
   "author": {
     "name": "Martin Nystrom",

@@ -48,20 +48,26 @@ Your job:
    summarize any relationship-health signals (blockers, escalations, wins) found. Paraphrase,
    don't quote messages verbatim, and only include something if it's clearly fine to surface in a
    shared report — when in doubt, leave it out.
-10. Query `Certifications_and_Specializations__c` where `Account__c = '<accountId>'` for any
-    on-file certifications (Vendor__c, Certification_or_Specialization_Type__c). This object is a
-    legacy one capped to a small set of old hardware vendors (Cisco/Citrix/EMC/HP/NetApp/VMware) —
-    a zero-row result just means no legacy record exists, not that <Company> has no
-    certifications; say it that way rather than asserting an absence.
-11. If a ZoomInfo connector is available, pull award/recognition signals via
-    `search_scoops`/`enrich_company_signals` with `scoopTypes: ["Award"]` (and optionally
-    `"Partnership"`/`"Product Launch"`).
-12. If a Glean connector is available, search with `app: "atc platform"` for "<Company>" to check
-    for WWT Advanced Technology Center lab/demo content.
-13. Write 1-2 sentences on other WWT service capabilities around <Company>'s product (implementation,
-    managed services, professional services) if you know of any from public knowledge or the
-    documents/meetings pulled above — otherwise state plainly that nothing specific was found,
-    don't invent a service catalog.
+10. Read `wwt.com/partner/<company-slug>/expertise` (via Glean `read_document` or a web fetch — it's
+    public) for WWT's own named certifications/awards WITH <Company> (e.g. "CrowdStrike Focused
+    Partner — Americas — 2020"). This is about credentials WWT holds through <Company>'s partner
+    program, NOT <Company>'s own public certifications or industry accolades as a company — don't
+    conflate the two. If the page doesn't exist or has nothing listed, say so plainly.
+11. Read `wwt.com/partner/<company-slug>/overview` (same access method) for the named WWT practice
+    team (cross-check against CRM Partner_Manager__c/Account Owner), an "About <Company> & WWT"
+    blurb, recent partner-branded articles, and a "<Company> in the ATC" section listing named labs
+    with launch counts — this covers both the labs and other-service-capabilities parts of task 13
+    below in one read.
+12. Query `Certifications_and_Specializations__c` where `Account__c = '<accountId>'` as a secondary
+    check (Vendor__c, Certification_or_Specialization_Type__c). This is a legacy object capped to a
+    small set of old hardware vendors (Cisco/Citrix/EMC/HP/NetApp/VMware) — a zero-row result just
+    means no legacy record exists, not that <Company> has no WWT-held certifications; the
+    `/expertise` page in task 10 is the real answer here.
+13. If task 11 didn't turn up ATC lab content, also try a Glean search with `app: "atc platform"`
+    for "<Company>" directly. Write 1-2 sentences on other WWT service capabilities around
+    <Company>'s product (implementation, managed services, professional services) from whatever
+    task 11 turned up — otherwise state plainly that nothing specific was found, don't invent a
+    service catalog.
 
 Return a concise structured report (under 500 words). Do not write any files or publish
 anything — just report findings back in your final message.
@@ -89,6 +95,15 @@ Notes from the first run:
   `Partner_Skill__c` as a confirmed per-partner record — schema inspection found no Account/Partner
   lookup field on it, only a link up to `WWT_Skill__c`. If a subagent tries to match one to
   `<Company>` by name, it should say so explicitly as an unverified guess, not a finding.
+- **Corrected after the first CrowdStrike run got it wrong**: "certifications and awards" means
+  what WWT itself holds/won through the partner's program (e.g. "WWT is a CrowdStrike Focused
+  Partner," "WWT named CrowdStrike Flex Partner of the Year"), not the vendor's own public
+  certifications or industry accolades as a company. The first pass used a ZoomInfo Award-scoop
+  search (which surfaces the vendor's own recognitions) and concluded "nothing found" — wrong
+  direction entirely. The real answer was sitting on WWT's own public
+  `wwt.com/partner/crowdstrike/expertise` page the whole time: two named credentials with region and
+  year. Always check the `/expertise` and `/overview` pages first for this section; don't reach for
+  ZoomInfo here at all.
 
 ## QA subagent prompt (always launched, even for a single company)
 
