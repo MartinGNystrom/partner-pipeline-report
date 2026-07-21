@@ -1,10 +1,23 @@
 {
-  "validated_by_skill": true,
-  "skill": "plugin-checklist",
-  "validation_date": "2026-07-20",
-  "validation_result": "PASS",
-  "critical_issues": 0,
-  "warnings": 1,
+  "validated_by_skill": false,
+  "validation_type": "manual_self_check_by_claude",
+  "note": "This is a manual self-audit performed by Claude against the criteria previously reported by the wwt-plugin-marketplace checklist tool (a separate assistant/session, not available to this session). It is not a re-run of that automated tool, and should not be presented as one.",
+  "validation_date": "2026-07-21",
   "plugin_name": "wwt-partner-pipeline-report",
-  "version": "1.0.0"
+  "version": "1.2.2",
+  "checks_performed": [
+    { "check": "plugin.json / marketplace.json name and version consistency", "result": "pass" },
+    { "check": "SKILL.md frontmatter has no explicit name: field", "result": "pass" },
+    { "check": "no secret/credential-shaped strings in repo content", "result": "pass" },
+    { "check": "LICENSE present (MIT)", "result": "pass" },
+    { "check": "claude plugin validate . (marketplace manifest)", "result": "pass" }
+  ],
+  "observations": [
+    "Minor, non-blocking: the skill folder is skills/partner-pipeline-report/ without the wwt- prefix the plugin name itself carries. Not flagged as an error by any known rule, but worth a reviewer's eye."
+  ],
+  "open_items": [
+    "Manual check not performed (no access from this session): confirm no existing wwt-partner-pipeline-report, or near-match, already exists in the wwt-custom-apps/claude-marketplace catalog before submitting."
+  ],
+  "critical_issues": 0,
+  "warnings": 1
 }
