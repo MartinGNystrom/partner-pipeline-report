@@ -48,8 +48,22 @@ Your job:
    summarize any relationship-health signals (blockers, escalations, wins) found. Paraphrase,
    don't quote messages verbatim, and only include something if it's clearly fine to surface in a
    shared report — when in doubt, leave it out.
+10. Query `Certifications_and_Specializations__c` where `Account__c = '<accountId>'` for any
+    on-file certifications (Vendor__c, Certification_or_Specialization_Type__c). This object is a
+    legacy one capped to a small set of old hardware vendors (Cisco/Citrix/EMC/HP/NetApp/VMware) —
+    a zero-row result just means no legacy record exists, not that <Company> has no
+    certifications; say it that way rather than asserting an absence.
+11. If a ZoomInfo connector is available, pull award/recognition signals via
+    `search_scoops`/`enrich_company_signals` with `scoopTypes: ["Award"]` (and optionally
+    `"Partnership"`/`"Product Launch"`).
+12. If a Glean connector is available, search with `app: "atc platform"` for "<Company>" to check
+    for WWT Advanced Technology Center lab/demo content.
+13. Write 1-2 sentences on other WWT service capabilities around <Company>'s product (implementation,
+    managed services, professional services) if you know of any from public knowledge or the
+    documents/meetings pulled above — otherwise state plainly that nothing specific was found,
+    don't invent a service catalog.
 
-Return a concise structured report (under 450 words). Do not write any files or publish
+Return a concise structured report (under 500 words). Do not write any files or publish
 anything — just report findings back in your final message.
 ```
 
@@ -71,6 +85,10 @@ Notes from the first run:
   "no ZoomInfo connector found" or similar and move on rather than treating a missing connector as
   a blocker. Don't pad the report with a boilerplate "not available" line for every company if it
   just adds noise; a brief note is only worth including where the gap actually matters.
+- Tasks 10-13 (certs/awards/labs/capabilities) are also additive. Don't let a subagent present
+  `Partner_Skill__c` as a confirmed per-partner record — schema inspection found no Account/Partner
+  lookup field on it, only a link up to `WWT_Skill__c`. If a subagent tries to match one to
+  `<Company>` by name, it should say so explicitly as an unverified guess, not a finding.
 
 ## QA subagent prompt (launched once, after all per-company subagents report back)
 

@@ -111,6 +111,40 @@ required for the skill to work; treat each as optional and degrade gracefully.
   separate pass — each subagent already owns one company end-to-end, so it's the natural place to
   gather CRM facts and the wider narrative together and hand back one coherent picture.
 
+## Certifications, awards, labs, and service capabilities
+
+A separate enrichment pass covering "what can this partner actually do, and how credentialed are
+they" — distinct from the deal-momentum narrative above. Sources, in the WWT org:
+
+- **Certifications** (Salesforce): `Certifications_and_Specializations__c` has an `Account__c`
+  lookup straight to the partner Account — `SELECT Vendor__c, Certification_or_Specialization_Type__c
+  FROM Certifications_and_Specializations__c WHERE Account__c = '<partnerAccountId>'`. **Caveat:**
+  this object's `Vendor__c` picklist is capped to a small set of legacy hardware/software vendors
+  (Cisco, Citrix, EMC, HP, NetApp, VMware) — it looks like an older object that predates most
+  current cybersecurity/AI/quantum partners. Expect zero rows for a modern partner and say so as
+  "no legacy certification record on file," not "this partner has no certifications" — that's a
+  claim only public-knowledge or the vendor's own materials can support.
+- **`Partner_Skill__c`/`WWT_Skill__c`/`WWT_Parent_Skill__c`** look relevant by name (a partner/skill
+  matrix with `Status__c` of Pending/Approved/Rejected, `Location__c`/`US_Locations__c`, an
+  `Is_Active_Partner__c` flag) but **`Partner_Skill__c` has no confirmed lookup field to Account** —
+  schema inspection turned up no `Account__c`/`Partner__c` reference on it, only a link up to
+  `WWT_Skill__c`. Treat any attempt to tie a `Partner_Skill__c` row to a specific partner company as
+  unverified (probably a name-text match at best) until you've confirmed the actual linkage against
+  live data — don't present it as a solid finding the way the Account-level fields are.
+- **Awards** (ZoomInfo): `search_scoops`/`enrich_company_signals` support `scoopTypes: ["Award"]`
+  (also worth pairing with `"Product Launch"` and `"Partnership"`) for industry-recognition signals
+  — this is public-knowledge/market intelligence, not a WWT-internal record of any kind.
+- **Labs** (Glean): there is no "lab" object in Salesforce. WWT's Advanced Technology Center content
+  is reachable via `Glean search` with `app: "atc platform"` (labeled "Cisco Lab" in the connector's
+  own app-filter description, but not necessarily limited to Cisco in practice) — search the
+  partner's name there for hands-on lab/demo environment content.
+- **Other service capabilities**: fall back to public-knowledge context (same treatment as the
+  company blurb) for what WWT's own practice/service catalog offers around that partner's product —
+  implementation, managed services, professional services — since there's no confirmed
+  single-object source for this in CRM.
+- Fold this into the same per-company subagent as the other enrichment work (workflow step 4) —
+  don't spin up a fifth pass just for this.
+
 ## Workflow
 
 1. **Resolve accounts.** For each company name given, SOSL-search Account as above and confirm
@@ -125,7 +159,8 @@ required for the skill to work; treat each as optional and degrade gracefully.
    `references/fork-prompt-templates.md` for the exact prompt template) to verify the aggregates,
    pull the top 5 open opportunities, look up `OpportunityContactRole` sponsors on those
    opportunities, note any other populated partner-status fields, pull whatever ZoomInfo/document/
-   meeting/Slack signals are available (see the enrichment section above), and write a short
+   meeting/Slack signals are available (see the enrichment section above), pull certifications/
+   awards/labs/service-capability information (see that section below), and write a short
    narrative blurb combining public-knowledge company context with what internal sources actually
    show. A forked subagent inherits the parent's context, so it only needs its own company's
    already-known facts plus clear scope boundaries (explicitly rule out any name-collision or
@@ -142,12 +177,13 @@ required for the skill to work; treat each as optional and degrade gracefully.
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
    one section per company (status line, a short narrative blending public company context with
-   any ZoomInfo/document/meeting/Slack signals found, a callout for anything notable — missing
-   partner manager, zero closed-won, duplicate accounts, a whitespace angle, a relationship-health
-   flag surfaced from Slack, etc. — and a top-opportunities table with named contacts), and a
-   footer byline. If the user has their own preferred document style/template, follow that
-   instead. Keep the same summarize-don't-quote judgment from the enrichment step when writing
-   this up — a published report is not the place for a verbatim internal Slack message.
+   any ZoomInfo/document/meeting/Slack signals found, a certifications/awards/labs/capabilities
+   list where anything was found, a callout for anything notable — missing partner manager, zero
+   closed-won, duplicate accounts, a whitespace angle, a relationship-health flag surfaced from
+   Slack, etc. — and a top-opportunities table with named contacts), and a footer byline. If the
+   user has their own preferred document style/template, follow that instead. Keep the same
+   summarize-don't-quote judgment from the enrichment step when writing this up — a published
+   report is not the place for a verbatim internal Slack message.
 8. **Publish the report.** If the user has access to an internal page-hosting service (e.g. WWT's
    my-pages, reachable via its MCP connector), publish there and share the resulting URL — that's
    the actual deliverable, don't wait to be asked to share it. Otherwise, write the finished HTML
