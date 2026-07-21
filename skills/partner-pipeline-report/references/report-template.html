@@ -128,10 +128,20 @@
       <span class="company-name">[Company Name]</span>
       <span class="company-tier">[Tier · Status]</span>
     </div>
-    <div class="status-row"><span>Partner manager: <b>[Name, Title]</b></span><span>Open pipeline: <b>$[amount]</b> / [count] opps</span><span>Closed-won: <b>$[amount]</b> / [count] opps</span></div>
+    <div class="status-row"><span>Partner manager: <b>[Name, Title]</b></span><span>Open pipeline: <b>$[amount]</b> / [count] opps</span><span>Closed-won: <b>$[amount]</b> / [count] opps</span><span>ATC demo: <b>[Working demo/lab · Staged, not yet run · None found]</b></span></div>
     <div class="doc-body"><p>[2-3 sentences of public-knowledge company context tied to the report's theme, plus whatever
     ZoomInfo/document/meeting/Slack signals were found — a fuller narrative, not just a CRM
     number.]</p></div>
+    <!-- Optional: only include for a partner that is NOT publicly traded. Omit entirely for a
+         publicly traded partner (a one-line ticker/scale note in the paragraph above is enough
+         there) or if no funding research was performed. -->
+    <div class="doc-body"><p><b>Financial strength (private company):</b> [2-4 sentences: what funding (if any) has been
+    raised and by whom, sourced from ZoomInfo/Crunchbase/PitchBook/internal notes; then the actual
+    assessment — what this implies about relative strength given the deal size/engagement WWT is
+    considering with this partner specifically. Name the risk plainly if a small or unfunded partner
+    is being asked to carry outsized deal or delivery weight; name the offsetting strength (e.g. real
+    enterprise logos already using the product) if that's also true. If every funding source came
+    back empty, say "likely bootstrapped/self-funded" rather than "no data found."]</p></div>
     <!-- Optional: only include this block when at least one enrichment source (ZoomInfo, docs,
          meetings, Slack) turned up something concrete for this company. Omit entirely if none
          applied — don't pad every company with a "nothing found" bullet. -->

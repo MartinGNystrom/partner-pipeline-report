@@ -68,6 +68,24 @@ Your job:
     <Company>'s product (implementation, managed services, professional services) from whatever
     task 11 turned up — otherwise state plainly that nothing specific was found, don't invent a
     service catalog.
+14. Answer explicitly: does <Company> have a demo in the ATC? Run a general Glean search (no `app`
+    filter) for "<Company> ATC demo" across email/SharePoint/meeting notes/Slack in addition to
+    tasks 11/13's public-page and `atc platform` checks — the internal search often reveals the
+    real, current state (e.g. a demo unit already staged but not yet run) that the public partner
+    page won't show. State clearly which applies: a working ATC demo/lab exists, hardware/plans
+    exist but no demo has been run yet, or no ATC presence at all.
+15. Determine if <Company> is publicly traded or private (check for a ticker, or use ZoomInfo
+    `search_companies`'s `companyType` field). If public, a one-line note (ticker + rough scale) is
+    enough. If private, pull a funding/investor picture: ZoomInfo `search_companies` for employee
+    count/revenue, `enrich_company_signals` (`signalTypes: ["SCOOP","NEWS"]`) and `account_research`
+    for funding/investor signals, and a `WebSearch` for "<Company>" crunchbase funding investors as
+    a public cross-check (watch for name collisions with similarly-named but unrelated companies —
+    confirm city/website match). Write 2-4 sentences: what's been raised and by whom (if anything),
+    and what that implies about relative financial strength given the deal size/engagement WWT is
+    considering with <Company> specifically — name the risk plainly if a small or unfunded partner
+    is being asked to carry outsized deal or delivery weight, and name the offsetting strength
+    (e.g. real enterprise logos already using the product) if that's also true. If every source
+    comes back empty, conclude "likely bootstrapped/self-funded" rather than reporting a data gap.
 
 Return a concise structured report (under 500 words). Do not write any files or publish
 anything — just report findings back in your final message.
@@ -104,6 +122,22 @@ Notes from the first run:
   `wwt.com/partner/crowdstrike/expertise` page the whole time: two named credentials with region and
   year. Always check the `/expertise` and `/overview` pages first for this section; don't reach for
   ZoomInfo here at all.
+- **Added after a single-company Halocon run (2026-07-21)**: the public `wwt.com/partner/.../
+  overview` page and `atc platform` Glean search only tell you about a *published* ATC lab — they
+  said nothing about Halocon at all. A plain Glean search for "Halocon ATC demo" (no app filter)
+  surfaced the real, internal-only state: an executive-briefing recap describing a demo hardware
+  unit already staged at a specific ATC building, with running the actual demo still listed as an
+  unstarted next step. Always run both the published-page check and the general internal search —
+  relying on only one would have reported either a false "no ATC presence" or missed the nuance that
+  the demo hasn't actually happened yet.
+- **Same Halocon run**: ZoomInfo `search_companies` and `account_research` both came back with zero
+  funding/investor signals for the company. That absence was itself the finding — combined with a
+  small headcount/revenue (23 employees, ~$2.9M revenue) and an internal note about the company's
+  founder-funded origin, it supported a plain "likely bootstrapped, no institutional capital cushion"
+  conclusion, which mattered because the company was being discussed internally as a potential
+  anchor for a much larger, multi-quarter engagement. Report the absence-of-funding-signal finding
+  itself, framed against what the partner is being asked to carry — don't just say "no data found"
+  and stop.
 
 ## QA subagent prompt (always launched, even for a single company)
 

@@ -3,15 +3,18 @@
 A Claude Code plugin/skill for building a Salesforce partner-pipeline report — partner status
 (tier, program status, partner manager), named sponsors/economic buyers, pipeline (open +
 lifetime closed-won), a fuller narrative pulled from ZoomInfo, internal documents, meeting
-transcripts/summaries, and Slack, and a summary of certifications, awards, lab/demo availability,
-and other service capabilities — for any list of partner/vendor companies, wherever each source is
-available. Runs one subagent per company in parallel to gather and verify the data, then a QA
-subagent to catch arithmetic errors and de-duplicate any deal bundled across two partners, before
-rendering a clean, theme-aware standalone report.
+transcripts/summaries, and Slack, a summary of certifications, awards, ATC lab/demo availability,
+and other service capabilities, and — for any partner that isn't publicly traded — an assessment
+of its fundraising history, key investors, and relative financial strength — for any list of
+partner/vendor companies, wherever each source is available. Runs one subagent per company in
+parallel to gather and verify the data, then a QA subagent to catch arithmetic errors and
+de-duplicate any deal bundled across two partners, before rendering a clean, theme-aware
+standalone report.
 
 First built 2026-07-20 for a six-partner cybersecurity/AI/quantum pipeline report at World Wide
-Technology (WWT); extended the same day to layer in ZoomInfo, documents, meetings, and Slack; and
-again to add certifications/awards/labs/service-capability coverage.
+Technology (WWT); extended the same day to layer in ZoomInfo, documents, meetings, and Slack; again
+to add certifications/awards/labs/service-capability coverage; and again 2026-07-21 to explicitly
+answer ATC demo status and assess fundraising/investor strength for privately-held partners.
 
 ## Requirements
 
@@ -48,8 +51,9 @@ The skill will:
 2. Pull partner-status fields (tier, program status, partner manager) and pipeline aggregates
 3. Launch one subagent per company to independently verify the numbers, pull named sponsors from
    `OpportunityContactRole`, layer in whatever ZoomInfo/document/meeting/Slack signals are
-   available, summarize certifications/awards/lab availability/service capabilities, and write up
-   a fuller company narrative — not just CRM numbers
+   available, summarize certifications/awards/ATC lab and demo availability/service capabilities,
+   assess fundraising/investors/relative financial strength for any partner that isn't publicly
+   traded, and write up a fuller company narrative — not just CRM numbers
 4. Run a QA subagent to check arithmetic, de-duplicate any opportunity shared across two partners
    (e.g. a bundled deal), and spot-check the live data
 5. Render the report from `references/report-template.html` (or the user's own preferred style)
