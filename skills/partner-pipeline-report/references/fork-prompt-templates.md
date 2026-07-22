@@ -86,6 +86,19 @@ Your job:
     is being asked to carry outsized deal or delivery weight, and name the offsetting strength
     (e.g. real enterprise logos already using the product) if that's also true. If every source
     comes back empty, conclude "likely bootstrapped/self-funded" rather than reporting a data gap.
+16. Identify 3-6 real competitors to <Company> via `WebSearch` (e.g. "<Company> competitors
+    alternatives" plus a query naming <Company>'s specific product category) — do NOT rely on
+    ZoomInfo `find_similar_companies` as the primary source, it has returned firmographically
+    similar but functionally irrelevant results before. For each competitor, run the same CRM checks
+    as <Company> itself: SOSL `FIND {<Competitor>} IN NAME FIELDS RETURNING Account(Id, Name, Type,
+    Industry, Website, Partner_Type__c, Partner_Tier__c, Status__c)` for partner status, and
+    `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Competitor>%'
+    GROUP BY StageName` for their own WWT pipeline/closed-won history. A competitor with no Account
+    record at all is a real, reportable finding ("no formal WWT relationship") — don't skip it. For
+    any non-public competitor, a quick `WebSearch` funding/investor check adds scale context. State
+    plainly which competitor (if any) is ahead of <Company> on WWT program maturity (tier, pipeline,
+    deal history) versus which have no WWT relationship at all, and what that means for <Company>'s
+    competitive position specifically.
 
 Return a concise structured report (under 500 words). Do not write any files or publish
 anything — just report findings back in your final message.
@@ -138,6 +151,18 @@ Notes from the first run:
   anchor for a much larger, multi-quarter engagement. Report the absence-of-funding-signal finding
   itself, framed against what the partner is being asked to carry — don't just say "no data found"
   and stop.
+- **Added after the same Halocon run, competitive-landscape pass**: ZoomInfo `find_similar_companies`
+  on Halocon returned 15 "lookalikes" (Inflection AI, Lanthorn.ai, Pryon, etc.) all matched on a
+  misclassified "Business Intelligence (BI) Software" industry code — none were actual physical-
+  security competitors. A plain `WebSearch` for "Halocon competitors AI physical security camera
+  threat detection alternatives" immediately surfaced the real set (Verkada, Coram AI, IntelliSee,
+  ZeroEyes, Evolv Technology, Avigilon). Of those, only Verkada and Coram AI had any WWT Account
+  record at all; the CRM check found Verkada as an Approved (Tier 4) Active partner with real
+  (if mixed — $117K closed-won against $2.44M closed-lost) deal history and Coram AI as a nominal
+  Active partner with zero recorded Opportunities. A follow-up `WebSearch` confirmed Verkada is
+  extremely well-capitalized ($757M raised, $5.8B valuation, backed by Sequoia/CapitalG/Nvidia) —
+  the write-up named this plainly as Halocon's most credible competitive threat inside WWT, not a
+  neutral fact to log next to the others.
 
 ## QA subagent prompt (always launched, even for a single company)
 

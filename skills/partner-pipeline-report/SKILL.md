@@ -1,5 +1,5 @@
 ---
-description: Build a Salesforce partner-pipeline report (partner status, sponsors/named contacts, open and lifetime pipeline, ATC demo/lab availability, and — for privately-held partners — a fundraising/investor/relative-strength assessment) for a list of technology/OEM partner companies, using parallel per-company agents plus a QA verification pass, then publish it as a clean standalone report. Use when the user asks for a partner report, partner pipeline, or "find Salesforce opportunities for these companies" naming a list of vendor/partner companies.
+description: Build a Salesforce partner-pipeline report (partner status, sponsors/named contacts, open and lifetime pipeline, ATC demo/lab availability, a fundraising/investor/relative-strength assessment for privately-held partners, and each partner's competitive landscape with competitors' own WWT standing) for a list of technology/OEM partner companies, using parallel per-company agents plus a QA verification pass, then publish it as a clean standalone report. Use when the user asks for a partner report, partner pipeline, or "find Salesforce opportunities for these companies" naming a list of vendor/partner companies.
 ---
 
 # Partner Pipeline Report
@@ -10,8 +10,10 @@ Given a list of partner/vendor companies (e.g. cybersecurity, AI, or quantum ven
 organization resells or integrates), produce a report covering, per company: CRM partner status
 (tier, program status, partner manager), named sponsors/economic buyers on top deals, pipeline
 (open + lifetime closed-won), whether the partner has a demo or lab presence in WWT's Advanced
-Technology Center (ATC), and — for any partner that is not publicly traded — an assessment of its
-fundraising history, key investors, and what that implies about its relative financial strength.
+Technology Center (ATC), for any partner that is not publicly traded an assessment of its
+fundraising history, key investors, and what that implies about its relative financial strength,
+and each partner's competitive landscape — who else plays in the same space, and whether *those*
+companies have any standing of their own as WWT partners (tier, status, pipeline, funding).
 Where available, also layer in a fuller narrative pulled from ZoomInfo firmographics/signals,
 internal documents, meeting transcripts, and Slack, then publish it.
 
@@ -19,9 +21,11 @@ First built 2026-07-20 for a six-company report (Claroty, Filigran, Doppel, Comm
 Keyfactor, BlackCloak) at World Wide Technology (WWT); extended 2026-07-20 to pull in ZoomInfo,
 documents, meetings, and Slack alongside CRM, then to add certifications/awards/labs/service-
 capability coverage; extended again 2026-07-21 to explicitly answer "do they have an ATC demo"
-per company and to add a fundraising/investor/relative-strength assessment for non-public partners.
-See `references/fork-prompt-templates.md` for the exact prompts used and lessons learned from that
-run, and `references/report-template.html` for a ready-to-adapt report template.
+per company and to add a fundraising/investor/relative-strength assessment for non-public partners;
+extended again 2026-07-21 to add a competitive-landscape section identifying each partner's rivals
+and their own WWT partner standing. See `references/fork-prompt-templates.md` for the exact prompts
+used and lessons learned from that run, and `references/report-template.html` for a ready-to-adapt
+report template.
 
 ## Key CRM facts (Salesforce, via an MCP connector)
 
@@ -216,6 +220,44 @@ go deeper only for the non-public case.
   bootstrapped/self-funded" — say that plainly rather than reporting an absence of data as if
   nothing could be concluded from it.
 
+## Competitive landscape & competitors' WWT standing
+
+Partner status and pipeline in isolation don't say whether a partner is winning or losing ground —
+that requires knowing who else is in the fight and how *they* stand with WWT. This section answers
+both "who competes with this partner" and "does WWT already have a relationship with any of them."
+
+- **Identify competitors from public knowledge/WebSearch first, not ZoomInfo's `find_similar_companies`.**
+  A `WebSearch` for `"<Company>" competitors alternatives` (plus a second, more specific query using
+  the partner's actual product category, e.g. `"AI physical security camera threat detection
+  alternatives"`) reliably surfaces the real competitive set. `find_similar_companies` was tried on a
+  single-company run and returned firmographically-similar but functionally irrelevant companies
+  (matched on a misclassified ZoomInfo industry code rather than actual product category) — treat it
+  as, at best, a weak secondary signal to sanity-check against, never the primary source for
+  identifying who actually competes with a partner.
+- **Narrow to 3-6 real competitors** — the ones a customer would actually shortlist against this
+  partner, not every company in the same broad market segment. Prefer direct positioning matches
+  (same core mechanism/use case) over companies that only share an industry label.
+- **Check each competitor's own WWT standing**, using the exact same CRM lookups as the primary
+  partner: SOSL `FIND {<Competitor>} IN NAME FIELDS RETURNING Account(Id, Name, Type, Industry,
+  Website, Partner_Type__c, Partner_Tier__c, Status__c)` to see if a Partner Account exists at all,
+  then `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Competitor>%'
+  GROUP BY StageName` for their own pipeline/closed-won history. Many competitors will have **no**
+  Account record at all — that's a real, reportable finding ("no formal WWT relationship"), not a
+  gap to skip past.
+- **For any competitor that also isn't publicly traded**, a quick funding/investor check (same
+  `WebSearch crunchbase funding investors` approach as the financial-strength section — no need to
+  re-run the full ZoomInfo enrichment suite per competitor) adds useful scale context, especially
+  when contrasting a well-funded competitor against a bootstrapped primary partner or vice versa.
+- **Write the comparison, don't just tabulate it.** State plainly which competitor (if any) is
+  further ahead on WWT program maturity (tier, active pipeline, deal history) versus which are
+  absent from WWT's ecosystem entirely, and what that means for the primary partner's position — is
+  it fighting an entrenched, WWT-favored incumbent, or is the whole field underdeveloped inside WWT
+  regardless of who's biggest in the market? A competitor with heavy `Closed Lost` history against
+  WWT is a nuanced signal (real deal flow and account-team familiarity, but also a track record of
+  losing when it counts) — don't read it as pure strength or pure weakness.
+- Fold this into the same per-company subagent as the other enrichment work (workflow step 4) —
+  don't spin up a separate pass just for this.
+
 ## Workflow
 
 1. **Resolve accounts.** For each company name given, SOSL-search Account as above and confirm
@@ -233,11 +275,13 @@ go deeper only for the non-public case.
    meeting/Slack signals are available (see the enrichment section above), pull certifications/
    awards/labs/service-capability information including explicit ATC demo status (see that section
    below), determine public vs. private and — for non-public partners — assess fundraising/
-   investors/relative financial strength (see that section below), and write a short narrative
-   blurb combining public-knowledge company context with what internal sources actually show. A
-   forked subagent inherits the parent's context, so it only needs its own company's already-known
-   facts plus clear scope boundaries (explicitly rule out any name-collision or shared-opportunity
-   risk already spotted).
+   investors/relative financial strength (see that section below), identify the partner's real
+   competitors and check each competitor's own WWT partner standing and pipeline (see the
+   competitive-landscape section below), and write a short narrative blurb combining
+   public-knowledge company context with what internal sources actually show. A forked subagent
+   inherits the parent's context, so it only needs its own company's already-known facts plus clear
+   scope boundaries (explicitly rule out any name-collision or shared-opportunity risk already
+   spotted).
 5. **If a subagent's final report doesn't actually contain the requested findings** (e.g. it
    trails off into a status update instead of synthesizing), message it directly asking it to
    report what it already found — don't discard its work and re-run from scratch.
@@ -257,9 +301,11 @@ go deeper only for the non-public case.
    one section per company (status line including ATC demo status, a short narrative blending
    public company context with any ZoomInfo/document/meeting/Slack signals found, a certifications/
    awards/labs/capabilities list where anything was found, a financial-strength assessment for any
-   non-public partner, a callout for anything notable — missing partner manager, zero closed-won,
-   duplicate accounts, a whitespace angle, a relationship-health flag surfaced from Slack, a small
-   partner carrying outsized deal/engagement risk, etc. — and a top-opportunities table with named
+   non-public partner, a competitive-landscape table naming real competitors and their own WWT
+   partner status/pipeline/funding, a callout for anything notable — missing partner manager, zero
+   closed-won, duplicate accounts, a whitespace angle, a relationship-health flag surfaced from
+   Slack, a small partner carrying outsized deal/engagement risk, a better-funded or more-established
+   competitor already inside WWT's ecosystem, etc. — and a top-opportunities table with named
    contacts), and a footer byline. If the user has their own preferred document style/template,
    follow that instead. Keep the same summarize-don't-quote judgment from the enrichment step when
    writing this up — a published report is not the place for a verbatim internal Slack message.
