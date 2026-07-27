@@ -115,8 +115,9 @@
 
   <div>
     <h2 class="section-heading">Combined summary</h2>
-    <p class="section-sub">[One line on data provenance/verification, e.g. "All figures pulled live
-    from CRM, verified [date]. Open pipeline excludes all closed stages."]</p>
+    <p class="section-sub">[One plain-language line of context, e.g. "Figures reflect open and
+    historical deal activity as of [date]. Open pipeline excludes closed deals." Never name a
+    system, object, or field here — see the "report body is a business document" rule in SKILL.md.]</p>
   </div>
 
   <div class="table-wrap">
@@ -137,8 +138,8 @@
     </div>
     <div class="status-row"><span>Partner manager: <b>[Name, Title]</b></span><span>Open pipeline: <b>$[amount]</b> / [count] opps</span><span>Closed-won: <b>$[amount]</b> / [count] opps</span><span>ATC demo: <b>[Working demo/lab · Staged, not yet run · None found]</b></span></div>
     <div class="doc-body"><p>[2-3 sentences of public-knowledge company context tied to the report's theme, plus whatever
-    ZoomInfo/document/meeting/Slack signals were found — a fuller narrative, not just a CRM
-    number.]</p></div>
+    ZoomInfo/document/meeting/Slack signals were found — a fuller business narrative, not just a
+    dollar figure. Plain business language only — no system, object, or field names.]</p></div>
     <!-- Optional: only include for a partner that is NOT publicly traded. Omit entirely for a
          publicly traded partner (a one-line ticker/scale note in the paragraph above is enough
          there) or if no funding research was performed. -->
@@ -177,41 +178,45 @@
     <div class="table-wrap">
       <table class="data">
         <tr><th>Competitor</th><th>WWT partner status</th><th>WWT pipeline</th><th class="num">Lifetime closed-won</th><th>Funding profile</th></tr>
-        <tr><td>[Competitor name]</td><td>[Partner tier/status, or "No Account record — not a WWT partner"]</td><td>[open opp count/$ or "None found"]</td><td class="num">$[amount]</td><td>[funding summary if non-public, or "Publicly traded (TICKER)", or "Not researched" if out of scope]</td></tr>
+        <tr><td>[Competitor name]</td><td>[Partner tier/status, or "No formal WWT partner relationship found"]</td><td>[open opp count/$ or "None found"]</td><td class="num">$[amount]</td><td>[funding summary if non-public, or "Publicly traded (TICKER)", or "Not researched" if out of scope]</td></tr>
       </table>
     </div>
     <div class="flag">[The comparative read: which competitor, if any, is ahead on WWT program maturity/pipeline, which have no WWT relationship at all, and what that means for THIS partner's competitive position — not a neutral restatement of the table.]</div>
     <div class="table-wrap">
       <table class="data">
-        <tr><th>Opportunity</th><th>Account</th><th>Stage</th><th class="num">Amount</th><th>Close</th><th>Named contact</th></tr>
-        <tr><td>[Opportunity name]</td><td>[Customer account]</td><td>[Stage]</td><td class="num">$[amount]</td><td>[YYYY-MM-DD]</td><td>[Name, Title]</td></tr>
+        <tr><th>Deal</th><th>Customer</th><th>Stage</th><th class="num">Gross profit</th><th>Close</th><th>Named contact</th></tr>
+        <tr><td>[Deal name, in plain business terms]</td><td>[Customer name]</td><td>[Stage, in plain business terms]</td><td class="num">$[amount]</td><td>[YYYY-MM-DD]</td><td>[Name, Title]</td></tr>
       </table>
     </div>
   </div>
 
-  <div class="doc-footer">Prepared by [Name] — [Team] · Source: [CRM/system], live-verified [date] · Distribution: [Internal/External] · v1</div>
+  <div class="doc-footer">Prepared by [Name] — [Team] · Source: internal sales pipeline, current as of [date] · Distribution: [Internal/External] · v1</div>
 
-  <!-- Appendix: QA/processing narrative ONLY. Nothing above this line should ever contain
-       narrative about how the report was produced or verified — every section above states
-       business/technical facts about the partners themselves. This section is where that
-       process narrative goes instead: what the QA subagent checked, what it found, any
-       discrepancy it investigated and how, and any correction it made to the pre-QA draft.
-       Keep it visually subordinate (muted, smaller, below a dashed rule) so it doesn't compete
-       with the report's actual content. Omit this whole block only if no QA pass ran (which
-       should never happen per the skill's workflow). -->
+  <!-- Appendix: QA/processing narrative ONLY. This is the ONLY place in the whole document allowed
+       to name a CRM/system/object/field, or describe how the report was produced, queried, checked,
+       or corrected — every section above this line must read as pure business narrative with zero
+       such mentions (see the "report body is a business document" rule in SKILL.md). This section
+       is where all of that instead goes: what the data-QA subagent checked/found/corrected, any
+       discrepancy it investigated and how, which fields/objects/queries were used, and the outcome
+       of the second, business-language-compliance QA pass that reviewed the body above before this
+       report was published. Keep it visually subordinate (muted, smaller, below a dashed rule) so it
+       doesn't compete with the report's actual content. Omit this whole block only if no QA pass ran
+       (which should never happen per the skill's workflow). -->
   <div class="appendix">
     <p class="appendix-heading">Report processing notes</p>
-    <p>[Summary of what the QA subagent checked: arithmetic verification, live-data re-confirmation,
-    named-contact spot-checks, and combined-total de-duplication if multiple companies. State
-    pass/fail plainly.]</p>
+    <p>[Summary of what the data-QA subagent checked: arithmetic verification, live-data
+    re-confirmation, named-contact spot-checks, and combined-total de-duplication if multiple
+    companies. State pass/fail plainly.]</p>
     <ul>
       <li>[Any correction QA made to the pre-QA draft, e.g. "Recalculated Company X's open-pipeline
       total; original draft undercounted by $200 due to an arithmetic slip." — the corrected number
       itself lives in the report body above; this line just documents that a correction happened.]</li>
-      <li>[Any discrepancy QA investigated between sources, e.g. "vendor-reported bookings vs. SOQL
-      Closed-Won total," and what was concluded or that no clean explanation was found.]</li>
+      <li>[Any discrepancy QA investigated between sources, e.g. "vendor-reported bookings vs. a
+      closed-deal total," and what was concluded or that no clean explanation was found.]</li>
       <li>[Any enrichment source/connector that was unavailable for this run, if it materially
       limited coverage.]</li>
+      <li>[The business-language-compliance QA pass's outcome, e.g. "Second QA pass found no
+      CRM/field-name language in the body" or a list of what it caught and how it was rewritten.]</li>
     </ul>
   </div>
 

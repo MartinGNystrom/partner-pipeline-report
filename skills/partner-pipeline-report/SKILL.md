@@ -29,9 +29,14 @@ routing it instead to a dedicated appendix at the end of the report; corrected a
 same day, after building a real Rubrik report exposed two wrong CRM facts baked into earlier
 versions of this doc — Opportunity does have partner-lookup fields (`OEM__c`,
 `Services_Primary_OEM__c`) contrary to an earlier claim that it didn't, and `Amount` is gross
-profit, not revenue. See the "Key CRM facts" section below for the corrected guidance. See
-`references/fork-prompt-templates.md` for the exact prompts used and lessons learned from that run,
-and `references/report-template.html` for a ready-to-adapt report template.
+profit, not revenue; tightened again 2026-07-27, same day, after a rebuilt report still leaked CRM/
+field-name language (`Partner_Manager__c`, `OEM__c`, "CRM-derived") into its business-facing body —
+the report body must now read as a pure business document with zero CRM/Salesforce/object/field-name
+mentions and zero report-building-process narrative, enforced by a second, mandatory
+business-language-compliance QA pass. See the "report body is a business document" section and the
+"Key CRM facts" section below for the corrected guidance. See `references/fork-prompt-templates.md`
+for the exact prompts used and lessons learned from that run, and `references/report-template.html`
+for a ready-to-adapt report template.
 
 ## Key CRM facts (Salesforce, via an MCP connector)
 
@@ -294,6 +299,54 @@ both "who competes with this partner" and "does WWT already have a relationship 
 - Fold this into the same per-company subagent as the other enrichment work (workflow step 4) —
   don't spin up a separate pass just for this.
 
+## The report body is a business document — never a data-processing log
+
+**This is the single most important rule in this skill, added 2026-07-27 after a published report
+leaked CRM/database language into its business-facing body.** The report body (BLUF, combined
+summary, every per-company section, every callout, the competitive-landscape section, the
+top-opportunities table) must read as if a business analyst wrote it from firsthand knowledge of the
+partner relationship — **it must never mention CRM, Salesforce, SOQL, an object name (Opportunity,
+Account, OpportunityContactRole), a field name (`Amount`, `Total_Revenue__c`, `OEM__c`,
+`Partner_Manager__c`, `StageName`, `AccountId`, anything with a `__c` suffix or in camelCase/
+PascalCase), or any word describing how the report itself was built or checked (`queried`,
+`verified`, `spot-checked`, `SOQL`, `the data shows`, `a record exists/doesn't exist`, `CRM-derived`,
+`per the query`).** Every one of those is a **processing** detail, not a business fact, and belongs
+only in the appendix (see below) — never in the body, and never split across both.
+
+**Translate every fact into plain business language before it goes in the body:**
+- ~~"`Partner_Manager__c` is blank"~~ → "No partner manager is formally assigned to this account."
+- ~~"`Amount` ($X) / `Total_Revenue__c` ($Y)"~~ → "gross profit of $X on revenue of $Y" (state both
+  plainly as business measures; never name the field that holds them).
+- ~~"found only via `OEM__c`, not `Name`"~~ → this is a data-collection mechanism, not a business
+  fact — drop it from the body entirely. If the *fact itself* (e.g. "two deals worth $1.5M weren't
+  named after the vendor") is worth telling the reader, state that plainly without explaining how it
+  was found; the mechanism goes in the appendix if it's worth keeping at all.
+- ~~"the CRM total likely undercounts because some opportunities reference the product without the
+  company name"~~ → this update supersedes the v1.5.0 example that told writers this belonged in the
+  body. It does not: rephrase as a pure business fact with no mention of CRM/records/queries (e.g.
+  "actual engagement with this vendor is larger than the headline figures below capture"), or, if it
+  can't be stated without naming the mechanism, cut it from the body and put the full explanation in
+  the appendix instead.
+- ~~"No Account record — not a WWT partner"~~ → "No formal WWT partner relationship found."
+- ~~"Source: CRM, live-verified [date]"~~ → "Source: internal sales pipeline, current as of [date]"
+  (say where the information domain is — sales pipeline, partner program records — never the system/
+  object/field name that holds it).
+
+**One legitimate exception, not a loophole:** naming an external *research* source for a market or
+relationship signal — ZoomInfo, Slack, a named meeting, a public web page — is normal business-report
+sourcing (like a footnote), not "processing" narrative, and is fine to keep in the body (e.g. "— per
+a recent Slack thread" next to a relationship-health signal). The distinction is: *citing where a
+business fact came from* is allowed; *narrating how this report itself was built, queried, or
+corrected* is not. If a sentence describes the report-building process rather than the partner, it
+fails the test regardless of which system it names.
+
+**Mandatory second QA pass, after the report is drafted, before publishing:** once the report body
+exists, run a QA business-language-compliance pass over it (template in
+`references/fork-prompt-templates.md`) that scans every sentence outside the appendix against the
+banned-term list above and reports every hit verbatim with a suggested business-language rewrite.
+Treat any hit as a hard failure — rewrite the offending sentence and re-run the check. This pass is
+never skipped, exactly like the data-QA pass — see the renumbered workflow below.
+
 ## Workflow
 
 1. **Resolve accounts.** For each company name given, SOSL-search Account as above and confirm
@@ -323,8 +376,8 @@ both "who competes with this partner" and "does WWT already have a relationship 
 5. **If a subagent's final report doesn't actually contain the requested findings** (e.g. it
    trails off into a status update instead of synthesizing), message it directly asking it to
    report what it already found — don't discard its work and re-run from scratch.
-6. **Always launch a separate QA subagent** once the data is compiled (template in
-   `references/fork-prompt-templates.md`) — this step is never skipped, including for a single
+6. **Always launch a separate QA subagent for a data-QA pass** once the data is compiled (template
+   in `references/fork-prompt-templates.md`) — this step is never skipped, including for a single
    company handled directly rather than via a fork in step 4. Paste the fully compiled dataset,
    have it check the arithmetic, compute the correct cross-company combined totals with any shared
    opportunity de-duplicated (when there's more than one company), spot-re-run at least one live
@@ -334,7 +387,8 @@ both "who competes with this partner" and "does WWT already have a relationship 
    attempt rather than presenting both silently. **Use QA's corrected numbers**, not the pre-QA
    draft. Have it narrate what it checked, found, and corrected freely in its own final message —
    that narrative is exactly what step 7 turns into the report's appendix; it should not hold back
-   or compress it for the report's sake.
+   or compress it for the report's sake. This is the first of two mandatory QA passes — see step 8
+   for the second.
 7. **Build the report.** Start from `references/report-template.html` — a self-contained,
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
@@ -349,22 +403,18 @@ both "who competes with this partner" and "does WWT already have a relationship 
    contacts), a footer byline, and a "Report processing notes" appendix. If the user has their own
    preferred document style/template, follow that instead but keep the same appendix separation.
    Keep the same summarize-don't-quote judgment from the enrichment step when writing this up — a
-   published report is not the place for a verbatim internal Slack message.
-
-   **Keep the report body and the appendix strictly separate, per the template's own instructions:**
-   - The BLUF, combined summary, per-company sections, and callouts state only business/technical
-     facts *about the partners* — pipeline figures, contacts, tier/status, certifications, funding,
-     competitive standing, and any flag worth naming (a genuine discrepancy's *conclusion*, e.g. "the
-     CRM total likely undercounts because some opportunities reference the product without the
-     company name," is a business/technical fact about the partner relationship and belongs here).
-   - The appendix is the only place for narrative *about how the report was produced or verified* —
-     that QA ran, what it checked, that a number was corrected and why, that a connector was
-     unavailable. Nothing in the body should say "QA confirmed," "verified via," "spot-checked,"
-     or similarly describe the process; state the resulting fact instead and let the appendix carry
-     the process story.
-   - Test before finalizing: if a sentence is really about *the partner*, it belongs in the body; if
-     it's really about *the report-building process itself*, it belongs in the appendix, not both.
-8. **Publish the report.** If the user has access to an internal page-hosting service (e.g. WWT's
+   published report is not the place for a verbatim internal Slack message. **Write the body in
+   business language only, per the "report body is a business document" section above** — no CRM/
+   Salesforce/SOQL/object/field names and no narrative about how the report was checked or built;
+   all of that goes in the appendix instead.
+8. **Run the business-language-compliance QA pass** (template in `references/fork-prompt-templates.md`)
+   on the assembled report body — this is mandatory and never skipped, exactly like the data-QA pass
+   in step 6. Paste the drafted body (excluding the appendix) and have it flag every CRM/Salesforce/
+   object/field-name mention and every piece of report-building-process narrative it finds, each with
+   a suggested business-language rewrite. Treat any hit as a hard failure: rewrite the flagged
+   sentence and re-run this check before moving on. Only an appendix with zero hits in the body counts
+   as passing.
+9. **Publish the report.** If the user has access to an internal page-hosting service (e.g. WWT's
    my-pages, reachable via its MCP connector), publish there and share the resulting URL — that's
    the actual deliverable, don't wait to be asked to share it. Otherwise, write the finished HTML
    to a file and tell the user where it is.
@@ -376,10 +426,12 @@ both "who competes with this partner" and "does WWT already have a relationship 
 - Company count of 1-2 doesn't need the multi-subagent *research* treatment; do the SOQL/SOSL (and
   any enrichment lookups) directly yourself. The parallel-research-subagent approach earns its keep
   once you're covering enough companies (roughly 4+) that splitting the legwork across forks is
-  worth the overhead. **The QA subagent is not part of that tradeoff — always run it, even for one
-  company.** It has caught real errors on single-digit-company runs before (an arithmetic slip, and
-  a large unexplained discrepancy between a CRM total and a vendor-reported figure), and it's cheap
-  relative to the cost of publishing a wrong number.
+  worth the overhead. **Neither QA pass is part of that tradeoff — always run both, even for one
+  company.** The data-QA pass (step 6) has caught real errors on single-digit-company runs before (an
+  arithmetic slip, and a large unexplained discrepancy between a CRM total and a vendor-reported
+  figure); the business-language-compliance pass (step 8) has caught real CRM/field-name leakage into
+  a published report body. Both are cheap relative to the cost of publishing a wrong number or a
+  report that reads like a database dump.
 - Not every environment has every connector (ZoomInfo, Glean, Slack, Webex, Google Drive, etc.).
   Missing connectors just mean a thinner narrative for that section, not a failed report — CRM
   data alone (partner status + pipeline) is still a complete, useful report on its own.

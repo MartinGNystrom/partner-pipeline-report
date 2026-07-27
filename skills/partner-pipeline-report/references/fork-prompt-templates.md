@@ -232,7 +232,60 @@ pre-QA draft.
 **Keep QA's process narrative and the report's business content separate.** When writing the
 report itself (`references/report-template.html`), route QA's output to two different places:
 - A *resulting fact about the partner* (the corrected number, a discrepancy's likely explanation)
-  goes in the normal per-company section or callout, stated as a fact — not as "QA found that...".
+  goes in the normal per-company section or callout, stated as a **pure business fact — no CRM,
+  Salesforce, object, or field-name language, and no phrase like "QA found that..." or "the CRM
+  total undercounts."** State the business consequence plainly (e.g. "actual engagement is larger
+  than the headline figure captures") and nothing about the mechanism, or cut it from the body
+  entirely if it can't be phrased that way.
 - The *narrative about the checking itself* (that a QA pass ran, what it verified, that a number
-  was corrected, that a connector was missing) goes only in the report's "Report processing notes"
-  appendix at the end — never mixed into the BLUF, summary, or per-company sections above it.
+  was corrected, that a connector was missing, any CRM/field-name detail at all) goes only in the
+  report's "Report processing notes" appendix at the end — never mixed into the BLUF, summary, or
+  per-company sections above it.
+
+## Business-language-compliance QA prompt (mandatory second QA pass, run on the drafted report body)
+
+This is a **second, separate QA pass from the one above** — it runs after the report body is
+written, not on the raw data. Added 2026-07-27 after a published report's body still said things
+like `Partner_Manager__c field itself is blank`, `found only via OEM__c, not Name`, and `CRM-derived
+number` despite the first QA pass and the appendix-separation rule already being in place. Run this
+every time, no exceptions, immediately before publishing.
+
+```
+Business-language-compliance QA pass on the drafted <company/companies> partner-pipeline report
+body (the appendix is NOT in scope for this check — only everything above it). Here is the full
+body text to review:
+
+<paste the assembled report body HTML/text, excluding the "Report processing notes" appendix>
+
+YOUR JOB: scan every sentence for anything that is not pure business language. Specifically flag:
+1. Any CRM/Salesforce/database system name (CRM, Salesforce, SOQL, SOSL).
+2. Any object or field name — anything with a `__c` suffix, camelCase/PascalCase identifiers
+   (StageName, AccountId, CloseDate, OpportunityContactRole), or a capitalized Salesforce noun used
+   as a technical term rather than a plain English word (e.g. "Account record" meaning a database
+   row, vs. the ordinary English word "account" meaning a customer relationship — flag the former,
+   not the latter).
+3. Any word or phrase describing how the report itself was produced, checked, or corrected:
+   "verified," "spot-checked," "queried," "the data shows," "a record exists/doesn't exist,"
+   "CRM-derived," "per the query," "found via," or similar.
+4. Any other sentence that is really about the report-building process rather than the partner or
+   its business relationship with WWT.
+
+For each hit, quote the exact offending phrase, say which rule it violates (1-4 above), and propose
+a specific business-language rewrite that preserves the underlying fact without the leaked
+terminology (or say "cut this sentence — it's process narrative with no business-fact residue" if
+nothing survives the rewrite). Do NOT flag a legitimate external-source citation for a business
+signal (e.g. "— per ZoomInfo," "— a recent Slack thread," a named public web page) — that is normal
+report sourcing, not a violation, as long as it's citing where a *business* fact came from and not
+describing the report-building process itself.
+
+Report back a simple pass/fail: if zero hits, say so plainly ("PASS — no CRM/field/process language
+found in the body"). If any hits, list them all with the rewrite for each — this is a hard gate, not
+a suggestion; every hit must be fixed and the body re-checked before publishing.
+```
+
+The first real run of this pass (Rubrik, 2026-07-27 rebuild v3) found violations including the
+section-sub line under "Combined summary" naming `Salesforce` and `Opportunity.Amount`/
+`Total_Revenue__c` directly, a status-row phrase reading `Partner_Manager__c field itself is blank`,
+two top-opportunities-table cells reading `found only via OEM__c, not Name`, and a flag sentence
+reading `CRM SOQL figure` — all rewritten to plain business phrasing (see the corrected examples in
+the "report body is a business document" section of SKILL.md) before republishing.
