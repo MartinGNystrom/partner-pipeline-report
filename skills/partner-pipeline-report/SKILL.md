@@ -33,10 +33,12 @@ profit, not revenue; tightened again 2026-07-27, same day, after a rebuilt repor
 field-name language (`Partner_Manager__c`, `OEM__c`, "CRM-derived") into its business-facing body —
 the report body must now read as a pure business document with zero CRM/Salesforce/object/field-name
 mentions and zero report-building-process narrative, enforced by a second, mandatory
-business-language-compliance QA pass. See the "report body is a business document" section and the
-"Key CRM facts" section below for the corrected guidance. See `references/fork-prompt-templates.md`
-for the exact prompts used and lessons learned from that run, and `references/report-template.html`
-for a ready-to-adapt report template.
+business-language-compliance QA pass; renamed again 2026-07-27, same day, adopting **"Partner
+Pulse" as the standing series name/title** for every report this skill produces (e.g. "Rubrik
+Partner Pulse"), replacing the ad hoc "Partner Pipeline Briefing"-style title used previously. See
+the "report body is a business document" section and the "Key CRM facts" section below for the
+corrected guidance. See `references/fork-prompt-templates.md` for the exact prompts used and lessons
+learned from that run, and `references/report-template.html` for a ready-to-adapt report template.
 
 ## Key CRM facts (Salesforce, via an MCP connector)
 
@@ -392,6 +394,11 @@ never skipped, exactly like the data-QA pass — see the renumbered workflow bel
 7. **Build the report.** Start from `references/report-template.html` — a self-contained,
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
+   **Title/kicker naming convention: "Partner Pulse."** Every report (both the browser-tab
+   `<title>` and the `doc-kicker` line under the header) is titled "**[Company] Partner Pulse**"
+   for a single-company report (e.g. "Rubrik Partner Pulse"), or "**Partner Pulse: [Company A],
+   [Company B], ...**" for a multi-company report. Use this consistently — it's the series name for
+   every report this skill produces, not a one-off title to reinvent per run.
    one section per company (status line including ATC demo status, a short narrative blending
    public company context with any ZoomInfo/document/meeting/Slack signals found, a certifications/
    awards/labs/capabilities list where anything was found, a financial-strength assessment for any
