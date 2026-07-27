@@ -16,14 +16,18 @@ for the <report audience> partner report. Use the CRM MCP tools
 I already have: Account partner status (Type=<Type>, Partner_Type__c=<...>, Partner_Tier__c=<...>,
 Status__c=<...>, Partner_Manager=<Name, Title>[, WWT_Executive_Partner_Sponsors__c=<...>,
 Sponsor_Name__c=<...>]), and aggregate pipeline by stage (<Stage: count/$amount, ...>), all found
-via Name LIKE '%<Company>%'.
+via OEM__c/Services_Primary_OEM__c (the WWT org's partner-lookup fields on Opportunity — verify the
+equivalent field name first in a different org) OR Name LIKE '%<Company>%' as a fallback. Note:
+Amount on these Opportunity records is gross profit in the WWT org, NOT revenue — revenue lives in
+Total_Revenue__c. Don't relabel one as the other.
 
 Your job:
 1. Verify these aggregate numbers with your own SOQL query (SELECT StageName, COUNT(Id),
-   SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Company>%' GROUP BY StageName) — flag any
-   discrepancy.
+   SUM(Amount), SUM(Total_Revenue__c) FROM Opportunity WHERE OEM__c = '<Company>' OR
+   Services_Primary_OEM__c = '<Company>' OR Name LIKE '%<Company>%' GROUP BY StageName) — flag any
+   discrepancy. Report both the gross-profit and revenue totals, labeled as such.
 2. Pull the top 5 largest OPEN (non-Closed) opportunities by Amount, with Id, Name, Account.Name,
-   StageName, Amount, CloseDate.
+   StageName, Amount, Total_Revenue__c, CloseDate.
 3. For those top opportunities, query OpportunityContactRole (child relationship on Opportunity,
    fields Contact.Name, Contact.Title, Role, IsPrimary) to find any named sponsors/economic
    buyers/champions. Report what you find, or state clearly if no contact roles are populated.
@@ -92,9 +96,11 @@ Your job:
     similar but functionally irrelevant results before. For each competitor, run the same CRM checks
     as <Company> itself: SOSL `FIND {<Competitor>} IN NAME FIELDS RETURNING Account(Id, Name, Type,
     Industry, Website, Partner_Type__c, Partner_Tier__c, Status__c)` for partner status, and
-    `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Competitor>%'
-    GROUP BY StageName` for their own WWT pipeline/closed-won history. A competitor with no Account
-    record at all is a real, reportable finding ("no formal WWT relationship") — don't skip it. For
+    `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE OEM__c = '<Competitor>' OR
+    Services_Primary_OEM__c = '<Competitor>' OR Name LIKE '%<Competitor>%' GROUP BY StageName` for
+    their own WWT pipeline/closed-won history (Amount here is gross profit, not revenue — same
+    caveat as for <Company> itself). A competitor with no Account record at all is a real,
+    reportable finding ("no formal WWT relationship") — don't skip it. For
     any non-public competitor, a quick `WebSearch` funding/investor check adds scale context. State
     plainly which competitor (if any) is ahead of <Company> on WWT program maturity (tier, pipeline,
     deal history) versus which have no WWT relationship at all, and what that means for <Company>'s
@@ -132,9 +138,9 @@ Notes from the first run:
   certifications or industry accolades as a company. The first pass used a ZoomInfo Award-scoop
   search (which surfaces the vendor's own recognitions) and concluded "nothing found" — wrong
   direction entirely. The real answer was sitting on WWT's own public
-  `wwt.com/partner/crowdstrike/expertise` page the whole time: two named credentials with region and
-  year. Always check the `/expertise` and `/overview` pages first for this section; don't reach for
-  ZoomInfo here at all.
+  [wwt.com/partner/crowdstrike/expertise](https://wwt.com/partner/crowdstrike/expertise) page the
+  whole time: two named credentials with region and year. Always check the `/expertise` and
+  `/overview` pages first for this section; don't reach for ZoomInfo here at all.
 - **Added after a single-company Halocon run (2026-07-21)**: the public `wwt.com/partner/.../
   overview` page and `atc platform` Glean search only tell you about a *published* ATC lab — they
   said nothing about Halocon at all. A plain Glean search for "Halocon ATC demo" (no app filter)
@@ -179,24 +185,30 @@ open-pipeline totals, top opportunities with contacts, any enrichment findings (
 labs/capabilities), and any cross-company shared/bundled opportunity Ids if N > 1>
 
 YOUR TASKS:
+0. Confirm every reported dollar figure is labeled correctly as gross profit (`Amount`) or revenue
+   (`Total_Revenue__c`) — in the WWT org these are two different fields roughly 10x apart, and
+   nothing above should combine or relabel one as the other. Flag it if it does.
 1. Arithmetic check: verify each company's "open total" (sum of non-Closed stages) matches the
    stage-by-stage numbers given above. Show your math and flag any mismatch.
 2. If N > 1: compute the combined open pipeline across all companies, correctly de-duplicating any
    shared opportunity (state the Id and amount) so it's counted only ONCE in the combined total,
    and compute combined lifetime Closed Won across all companies.
 3. Using the CRM MCP tools, independently re-run at least one spot-check aggregate query per
-   company (SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<company>%'
-   GROUP BY StageName) and confirm the numbers above are still accurate right now (data may have
-   changed). Flag any company where live data differs from what's stated above.
+   company (SELECT StageName, COUNT(Id), SUM(Amount), SUM(Total_Revenue__c) FROM Opportunity WHERE
+   OEM__c = '<company>' OR Services_Primary_OEM__c = '<company>' OR Name LIKE '%<company>%' GROUP BY
+   StageName — using the WWT org's Opportunity partner-lookup fields, not `Name LIKE` alone) and
+   confirm the numbers above are still accurate right now (data may have changed). Flag any company
+   where live data differs from what's stated above.
 4. Spot-check 2-3 top opportunities and their named contacts against live data to confirm nothing
    was misquoted, and re-verify any certifications/enrichment finding that came from a direct query
    (e.g. Certifications_and_Specializations__c).
 5. If any enrichment source reported a figure that doesn't reconcile with the CRM-derived number
    (e.g. a vendor's own reported "bookings" total vs. a SOQL Closed-Won sum), don't let both numbers
-   sit side by side unexamined — attempt an explanation (different measurement definitions? opps
-   that reference the product without the company name in Opportunity.Name, missed by a Name LIKE
-   sweep?) and report your confidence in it. It's fine to conclude "no clean explanation found" if
-   that's the honest answer.
+   sit side by side unexamined — attempt an explanation (different measurement definitions — GP vs.
+   revenue is a real, recurring one in the WWT org, so check that first? opportunities tagged via
+   OEM__c/Services_Primary_OEM__c but not mentioning the company name in Opportunity.Name, which a
+   Name LIKE-only sweep would miss?) and report your confidence in it. It's fine to conclude "no
+   clean explanation found" if that's the honest answer.
 6. Sanity-check for other issues: any indication of a missed additional Account for any company
    (differently-named or regional entity)? Any close date or figure that looks like a data-entry
    artifact rather than a real forecast? Note anything internally inconsistent or suspicious.

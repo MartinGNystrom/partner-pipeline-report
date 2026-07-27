@@ -25,7 +25,11 @@ per company and to add a fundraising/investor/relative-strength assessment for n
 extended again 2026-07-21 to add a competitive-landscape section identifying each partner's rivals
 and their own WWT partner standing; extended again 2026-07-27 to keep the QA subagent's process
 narrative (what it checked, corrected, or couldn't reconcile) out of the report body entirely,
-routing it instead to a dedicated appendix at the end of the report. See
+routing it instead to a dedicated appendix at the end of the report; corrected again 2026-07-27,
+same day, after building a real Rubrik report exposed two wrong CRM facts baked into earlier
+versions of this doc — Opportunity does have partner-lookup fields (`OEM__c`,
+`Services_Primary_OEM__c`) contrary to an earlier claim that it didn't, and `Amount` is gross
+profit, not revenue. See the "Key CRM facts" section below for the corrected guidance. See
 `references/fork-prompt-templates.md` for the exact prompts used and lessons learned from that run,
 and `references/report-template.html` for a ready-to-adapt report template.
 
@@ -33,9 +37,10 @@ and `references/report-template.html` for a ready-to-adapt report template.
 
 These notes describe the schema conventions observed in WWT's Salesforce org. If you're running
 this against a different org, verify the equivalent fields/objects before relying on them — but
-the general shape (partner status lives on the Account, opportunities link to partners by name
-rather than by a dedicated lookup, sponsors live on OpportunityContactRole) is a common Salesforce
-CRM pattern worth checking for first.
+the general shape (partner status lives on the Account, opportunities may or may not have a
+dedicated partner/vendor lookup field so check for one before falling back to Name matching,
+sponsors live on OpportunityContactRole) is a common Salesforce CRM pattern worth checking for
+first.
 
 - Tool names for the CRM MCP connector are dynamic and vary by install. Use `ToolSearch` with a
   query like `"CRM SOQL Salesforce opportunity"` to find the connector's `soqlQuery`, `find` (SOSL),
@@ -54,17 +59,43 @@ CRM pattern worth checking for first.
   `Partner_Priority__c`, `Partner_Certification_Status__c`. In practice the executive-sponsor
   fields are usually blank — say so plainly rather than implying an executive sponsor exists when
   the field is empty.
-- **Opportunities do NOT link to the partner via `AccountId`** — `AccountId` is the *customer*.
-  A typical Opportunity object has no partner/vendor lookup field at all. Find partner-linked
-  opportunities by searching **Name** (and optionally `NextStep`) for the partner's name instead:
-  `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Company>%' GROUP
-  BY StageName` for pipeline aggregates, and `FIND {<Company>} IN NAME FIELDS RETURNING
-  Opportunity(Id, Name, StageName, Amount, CloseDate, AccountId, Account.Name)` for the
-  individual-deal list. `Opportunity.Description` (a textarea field) typically can't be
-  `LIKE`-filtered — `Name` and `NextStep` usually can.
-- **"Open pipeline"** = every stage except the closed stages (e.g. `Closed Won`, `Closed Lost`,
-  and any "no bid"/disqualified stage — check the org's exact `StageName` picklist values first,
-  including odd whitespace in a label).
+- **`AccountId` on Opportunity is the *customer*, not the partner** — but check for a dedicated
+  partner/vendor lookup field on Opportunity before assuming none exists and falling back to Name
+  matching. **In the WWT org, Opportunity has `OEM__c` and a secondary `Services_Primary_OEM__c`** —
+  both real partner/vendor lookups that an earlier version of this doc incorrectly claimed didn't
+  exist. Name-only matching undercounts: confirmed on a real run (Rubrik, 2026-07-27 — see the
+  published [Rubrik partner pipeline briefing](https://my-pages.apps.wwt.com/nystromm/rubrik-partner-pipeline-briefing))
+  where `Name LIKE` alone missed 18 open opportunities worth $4.4M in gross profit whose `Name`
+  never mentioned the vendor at all (e.g. "Boeing: SBaaS (Large Dell Takeout Opp)", "Maybank Cisco
+  9300 for BCP Site"). The defensible query is:
+  `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE OEM__c = '<Company>' OR
+  Services_Primary_OEM__c = '<Company>' OR Name LIKE '%<Company>%' GROUP BY StageName` for pipeline
+  aggregates, and the equivalent `SELECT`/`FIND` with `Id, Name, StageName, Amount, CloseDate,
+  AccountId, Account.Name` for the individual-deal list. Expect a few `Name LIKE` matches to be
+  mis-tagged (a name that doesn't actually reference the vendor) — eyeball them rather than trusting
+  the field blindly. If a different org has no equivalent lookup field, confirm that first (don't
+  assume WWT's field names apply), and only then fall back to `Name`/`NextStep` matching.
+  `Opportunity.Description` (a textarea field) typically can't be `LIKE`-filtered — `Name` and
+  `NextStep` usually can.
+- **`Opportunity.Amount` is GROSS PROFIT, not revenue, in the WWT org** — another correction from
+  the same Rubrik run: a `Name LIKE '%Rubrik%'` sum of `Total_Revenue__c` for 2025 reproduced an
+  internal partner scorecard's revenue figure ($78.6M) exactly, while `SUM(Amount)` for the same
+  opportunities came out roughly 10x smaller. Revenue lives in **`Total_Revenue__c`** (also
+  `Product_Revenue__c`, `Total_Contract_Revenue__c`); `Amount` corresponds to
+  `Expected_GP__c`/`Total_Contract_GP__c`, with `Expected_GM__c` as the margin percentage. **Always
+  state which measure a number represents, and never combine `Amount` and a revenue field in one
+  total** — reporting `Amount` as revenue overstates margin and understates deal size by an order of
+  magnitude. Pull both `Amount` and `Total_Revenue__c` on the individual-deal query so the report can
+  show — and label — each correctly. Verify which field means what before trusting this in a
+  different org; don't assume the WWT mapping applies elsewhere.
+- **"Open pipeline"** = every stage except the closed stages. **In the WWT org**, `StageName` is 5
+  open values (`Pursuit`, `Upside Commit`, `Discover`, `Stretch`, `Commit`) plus 3 closed
+  (`Closed Won`, `Closed Lost`, and `Closed:  No Bid` — note the double space in that exact label).
+  Check the real picklist values for any other org rather than assuming this list, including odd
+  whitespace in a label.
+- **`OpportunityLineItem` has zero rows org-wide in the WWT org** — a product/line-item-based
+  aggregation approach is a dead end there; use the Opportunity-level fields above instead. Confirm
+  row counts before relying on `OpportunityLineItem` in a different org.
 - **Named sponsors/economic buyers** come from `OpportunityContactRole` (child relationship on
   Opportunity: `Contact.Name`, `Contact.Title`, `Role`, `IsPrimary`) queried per top opportunity —
   not from Account-level sponsor fields, which are typically empty.
@@ -140,7 +171,8 @@ sources; don't conflate them.
   "About `<Vendor>` & WWT" blurb and recent partner-branded articles/blogs — a good source for the
   **other service capabilities** part of this section too, instead of guessing from general public
   knowledge.
-- **A secondary, curated cross-check**: `wwt.com/corporate/awards-and-recognitions/overview` lists
+- **A secondary, curated cross-check**:
+  [wwt.com/corporate/awards-and-recognitions/overview](https://wwt.com/corporate/awards-and-recognitions/overview) lists
   per-vendor certification counts, but only for a handful of WWT's largest infrastructure OEMs
   (Cisco, Dell, HPE, NetApp, F5, Intel, NVIDIA, Microsoft, Palo Alto Networks as of this writing) —
   most partners, including most cybersecurity/AI vendors, won't appear there. Don't treat its
@@ -242,10 +274,12 @@ both "who competes with this partner" and "does WWT already have a relationship 
 - **Check each competitor's own WWT standing**, using the exact same CRM lookups as the primary
   partner: SOSL `FIND {<Competitor>} IN NAME FIELDS RETURNING Account(Id, Name, Type, Industry,
   Website, Partner_Type__c, Partner_Tier__c, Status__c)` to see if a Partner Account exists at all,
-  then `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE Name LIKE '%<Competitor>%'
-  GROUP BY StageName` for their own pipeline/closed-won history. Many competitors will have **no**
-  Account record at all — that's a real, reportable finding ("no formal WWT relationship"), not a
-  gap to skip past.
+  then `SELECT StageName, COUNT(Id), SUM(Amount) FROM Opportunity WHERE OEM__c = '<Competitor>' OR
+  Services_Primary_OEM__c = '<Competitor>' OR Name LIKE '%<Competitor>%' GROUP BY StageName` (per
+  the corrected partner-lookup guidance above — `OEM__c`/`Services_Primary_OEM__c` in the WWT org,
+  `Name LIKE` as the fallback elsewhere) for their own pipeline/closed-won history, remembering that
+  `Amount` there is gross profit, not revenue. Many competitors will have **no** Account record at
+  all — that's a real, reportable finding ("no formal WWT relationship"), not a gap to skip past.
 - **For any competitor that also isn't publicly traded**, a quick funding/investor check (same
   `WebSearch crunchbase funding investors` approach as the financial-strength section — no need to
   re-run the full ZoomInfo enrichment suite per competitor) adds useful scale context, especially
@@ -266,10 +300,12 @@ both "who competes with this partner" and "does WWT already have a relationship 
    the right Id(s) (watch for fuzzy matches and duplicates).
 2. **Pull Account partner-status fields** for all resolved Ids in one SOQL query, then resolve any
    Partner_Manager__c (or equivalent) User Ids to names/titles in a follow-up query.
-3. **Pull pipeline aggregates** per company (`GROUP BY StageName` SOQL on `Name LIKE`) and a
-   sample opportunity list (SOSL `FIND`) to identify top open deals. Do this directly yourself for
-   a first pass if the company count is small, or skip straight to step 4 if you'd rather have
-   agents do the primary research.
+3. **Pull pipeline aggregates** per company (`GROUP BY StageName` SOQL on the partner-lookup
+   field(s) if present — `OEM__c`/`Services_Primary_OEM__c` in the WWT org — OR `Name LIKE` as a
+   fallback) and a sample opportunity list (SOSL `FIND`) to identify top open deals, pulling both
+   `Amount` (gross profit in the WWT org) and `Total_Revenue__c` (actual revenue) so the two aren't
+   conflated later. Do this directly yourself for a first pass if the company count is small, or
+   skip straight to step 4 if you'd rather have agents do the primary research.
 4. **Launch one fork/subagent per company, all in a single message** (see
    `references/fork-prompt-templates.md` for the exact prompt template) to verify the aggregates,
    pull the top 5 open opportunities, look up `OpportunityContactRole` sponsors on those

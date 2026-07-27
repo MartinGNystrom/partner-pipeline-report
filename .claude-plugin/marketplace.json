@@ -5,13 +5,13 @@
     "email": "martin.nystrom@wwt.com"
   },
   "description": "Self-hosted marketplace for the wwt-partner-pipeline-report plugin.",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "plugins": [
     {
       "name": "wwt-partner-pipeline-report",
       "source": "./",
       "description": "Build a Salesforce partner-pipeline report (partner status, named sponsors, open + lifetime pipeline, ZoomInfo/document/meeting/Slack signals, certifications/awards/labs/service capabilities, explicit ATC demo status, a fundraising/investor/relative-strength assessment for privately-held partners, and each partner's competitive landscape with competitors' own WWT standing) via parallel subagents + QA, published as a clean standalone report.",
-      "version": "1.5.0",
+      "version": "1.6.0",
       "author": {
         "name": "Martin Nystrom",
         "email": "martin.nystrom@wwt.com"
