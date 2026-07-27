@@ -23,9 +23,11 @@ documents, meetings, and Slack alongside CRM, then to add certifications/awards/
 capability coverage; extended again 2026-07-21 to explicitly answer "do they have an ATC demo"
 per company and to add a fundraising/investor/relative-strength assessment for non-public partners;
 extended again 2026-07-21 to add a competitive-landscape section identifying each partner's rivals
-and their own WWT partner standing. See `references/fork-prompt-templates.md` for the exact prompts
-used and lessons learned from that run, and `references/report-template.html` for a ready-to-adapt
-report template.
+and their own WWT partner standing; extended again 2026-07-27 to keep the QA subagent's process
+narrative (what it checked, corrected, or couldn't reconcile) out of the report body entirely,
+routing it instead to a dedicated appendix at the end of the report. See
+`references/fork-prompt-templates.md` for the exact prompts used and lessons learned from that run,
+and `references/report-template.html` for a ready-to-adapt report template.
 
 ## Key CRM facts (Salesforce, via an MCP connector)
 
@@ -294,7 +296,9 @@ both "who competes with this partner" and "does WWT already have a relationship 
    between a CRM-derived number and any other reported figure a document search turned up (e.g. a
    vendor's own reported bookings vs. a SOQL Closed-Won total), which is worth an explanation
    attempt rather than presenting both silently. **Use QA's corrected numbers**, not the pre-QA
-   draft.
+   draft. Have it narrate what it checked, found, and corrected freely in its own final message —
+   that narrative is exactly what step 7 turns into the report's appendix; it should not hold back
+   or compress it for the report's sake.
 7. **Build the report.** Start from `references/report-template.html` — a self-contained,
    theme-aware (light/dark) HTML template with a kicker/header, a headline stating the
    conclusion (not just the topic), a BLUF callout, a combined summary table across all companies,
@@ -306,9 +310,24 @@ both "who competes with this partner" and "does WWT already have a relationship 
    closed-won, duplicate accounts, a whitespace angle, a relationship-health flag surfaced from
    Slack, a small partner carrying outsized deal/engagement risk, a better-funded or more-established
    competitor already inside WWT's ecosystem, etc. — and a top-opportunities table with named
-   contacts), and a footer byline. If the user has their own preferred document style/template,
-   follow that instead. Keep the same summarize-don't-quote judgment from the enrichment step when
-   writing this up — a published report is not the place for a verbatim internal Slack message.
+   contacts), a footer byline, and a "Report processing notes" appendix. If the user has their own
+   preferred document style/template, follow that instead but keep the same appendix separation.
+   Keep the same summarize-don't-quote judgment from the enrichment step when writing this up — a
+   published report is not the place for a verbatim internal Slack message.
+
+   **Keep the report body and the appendix strictly separate, per the template's own instructions:**
+   - The BLUF, combined summary, per-company sections, and callouts state only business/technical
+     facts *about the partners* — pipeline figures, contacts, tier/status, certifications, funding,
+     competitive standing, and any flag worth naming (a genuine discrepancy's *conclusion*, e.g. "the
+     CRM total likely undercounts because some opportunities reference the product without the
+     company name," is a business/technical fact about the partner relationship and belongs here).
+   - The appendix is the only place for narrative *about how the report was produced or verified* —
+     that QA ran, what it checked, that a number was corrected and why, that a connector was
+     unavailable. Nothing in the body should say "QA confirmed," "verified via," "spot-checked,"
+     or similarly describe the process; state the resulting fact instead and let the appendix carry
+     the process story.
+   - Test before finalizing: if a sentence is really about *the partner*, it belongs in the body; if
+     it's really about *the report-building process itself*, it belongs in the appendix, not both.
 8. **Publish the report.** If the user has access to an internal page-hosting service (e.g. WWT's
    my-pages, reachable via its MCP connector), publish there and share the resulting URL — that's
    the actual deliverable, don't wait to be asked to share it. Otherwise, write the finished HTML

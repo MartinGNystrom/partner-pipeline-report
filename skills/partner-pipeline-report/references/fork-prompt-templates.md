@@ -203,7 +203,11 @@ YOUR TASKS:
 
 Report back concisely (under 400 words): pass/fail on the arithmetic, live-data confirmation
 results, the contact/enrichment spot-check outcome, any discrepancy explanation attempted, and any
-other flags. This is a verification pass only — do not rewrite the report itself.
+other flags. This is a verification pass only — do not rewrite the report itself. Narrate this
+freely and completely in your final message — don't compress it for the report's sake. This
+narrative isn't going into the report body; it becomes the report's separate "Report processing
+notes" appendix (see the template), so say plainly what you checked, what passed, what you
+corrected and why, and what (if anything) stayed unexplained.
 ```
 
 This QA pass has caught real issues even on small runs: a genuine $200 arithmetic error in a
@@ -212,3 +216,11 @@ real discrepancy between WWT's own internal "CrowdStrike OEM Bookings" figures a
 Closed-Won total that was worth investigating rather than silently reporting both. Always apply
 the corrected numbers and any discrepancy finding from QA before writing the report, not the
 pre-QA draft.
+
+**Keep QA's process narrative and the report's business content separate.** When writing the
+report itself (`references/report-template.html`), route QA's output to two different places:
+- A *resulting fact about the partner* (the corrected number, a discrepancy's likely explanation)
+  goes in the normal per-company section or callout, stated as a fact — not as "QA found that...".
+- The *narrative about the checking itself* (that a QA pass ran, what it verified, that a number
+  was corrected, that a connector was missing) goes only in the report's "Report processing notes"
+  appendix at the end — never mixed into the BLUF, summary, or per-company sections above it.

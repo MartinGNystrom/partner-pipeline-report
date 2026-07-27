@@ -75,6 +75,13 @@
 
   .doc-footer{ font-size: 0.8rem; color: var(--muted); padding-top: 16px; border-top: 1px solid var(--border); }
 
+  .appendix{ display: flex; flex-direction: column; gap: 10px; padding-top: 20px; border-top: 1px dashed var(--border); }
+  .appendix-heading{ font-size: 0.8rem; font-weight: 600; letter-spacing: 0.02em; color: var(--muted); text-transform: uppercase; margin: 0; }
+  .appendix p{ margin: 0 0 8px; font-size: 0.84rem; line-height: 1.6; color: var(--muted); max-width: 78ch; }
+  .appendix p:last-child{ margin-bottom: 0; }
+  .appendix ul{ margin: 0; padding: 0 0 0 18px; display: flex; flex-direction: column; gap: 4px; }
+  .appendix li{ font-size: 0.84rem; line-height: 1.6; color: var(--muted); max-width: 78ch; }
+
   @media (max-width: 700px){
     .status-row{ flex-direction: column; gap: 3px; }
   }
@@ -183,6 +190,30 @@
   </div>
 
   <div class="doc-footer">Prepared by [Name] — [Team] · Source: [CRM/system], live-verified [date] · Distribution: [Internal/External] · v1</div>
+
+  <!-- Appendix: QA/processing narrative ONLY. Nothing above this line should ever contain
+       narrative about how the report was produced or verified — every section above states
+       business/technical facts about the partners themselves. This section is where that
+       process narrative goes instead: what the QA subagent checked, what it found, any
+       discrepancy it investigated and how, and any correction it made to the pre-QA draft.
+       Keep it visually subordinate (muted, smaller, below a dashed rule) so it doesn't compete
+       with the report's actual content. Omit this whole block only if no QA pass ran (which
+       should never happen per the skill's workflow). -->
+  <div class="appendix">
+    <p class="appendix-heading">Report processing notes</p>
+    <p>[Summary of what the QA subagent checked: arithmetic verification, live-data re-confirmation,
+    named-contact spot-checks, and combined-total de-duplication if multiple companies. State
+    pass/fail plainly.]</p>
+    <ul>
+      <li>[Any correction QA made to the pre-QA draft, e.g. "Recalculated Company X's open-pipeline
+      total; original draft undercounted by $200 due to an arithmetic slip." — the corrected number
+      itself lives in the report body above; this line just documents that a correction happened.]</li>
+      <li>[Any discrepancy QA investigated between sources, e.g. "vendor-reported bookings vs. SOQL
+      Closed-Won total," and what was concluded or that no clean explanation was found.]</li>
+      <li>[Any enrichment source/connector that was unavailable for this run, if it materially
+      limited coverage.]</li>
+    </ul>
+  </div>
 
 </div>
 

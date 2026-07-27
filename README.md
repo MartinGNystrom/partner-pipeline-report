@@ -10,7 +10,10 @@ landscape — who else plays in the same space and whether those competitors hav
 their own as WWT partners — for any list of partner/vendor companies, wherever each source is
 available. Runs one subagent per company in parallel to gather and verify the data, then a QA
 subagent to catch arithmetic errors and de-duplicate any deal bundled across two partners, before
-rendering a clean, theme-aware standalone report.
+rendering a clean, theme-aware standalone report. The QA subagent's own process narrative (what it
+checked, corrected, or couldn't reconcile) never mixes into the report body — it lands in a
+dedicated appendix at the end, keeping the main report to business/technical facts about the
+partners themselves.
 
 First built 2026-07-20 for a six-partner cybersecurity/AI/quantum pipeline report at World Wide
 Technology (WWT); extended the same day to layer in ZoomInfo, documents, meetings, and Slack; again
