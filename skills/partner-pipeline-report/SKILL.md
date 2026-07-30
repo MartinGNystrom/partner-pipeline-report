@@ -35,7 +35,17 @@ the report body must now read as a pure business document with zero CRM/Salesfor
 mentions and zero report-building-process narrative, enforced by a second, mandatory
 business-language-compliance QA pass; renamed again 2026-07-27, same day, adopting **"Partner
 Pulse" as the standing series name/title** for every report this skill produces (e.g. "Rubrik
-Partner Pulse"), replacing the ad hoc "Partner Pipeline Briefing"-style title used previously. See
+Partner Pulse"), replacing the ad hoc "Partner Pipeline Briefing"-style title used previously;
+extended again 2026-07-30 after reviewing the notes from a real Rubrik EBC/partner-summit meeting
+(2026-07-28) surfaced two gaps: the meeting-notes enrichment source only captured retrospective
+relationship-health signals, not the forward-looking joint GTM motion, program/coalition status,
+and named next-steps-with-owners a summit-style meeting actually produces (see the "Meeting
+transcripts/summaries" bullet below); and there was no discipline for cross-checking a security/AI
+partner's own claims and in-room framing against WWT's own institutional frameworks (ARMOR) rather
+than transcribing what the room said at face value — a real example that day found a vendor's
+"immutable air-gapped architecture" being informally credited to a domain (Infrastructure Security)
+it doesn't actually cover, when it's really a Data Protection control (see the new "AI/cybersecurity
+framework alignment" section below). See
 the "report body is a business document" section and the "Key CRM facts" section below for the
 corrected guidance. See `references/fork-prompt-templates.md` for the exact prompts used and lessons
 learned from that run, and `references/report-template.html` for a ready-to-adapt report template.
@@ -139,10 +149,18 @@ required for the skill to work; treat each as optional and degrade gracefully.
   (and link/ID if the platform provides one) rather than quoting large blocks of text; summarize
   the relevant point in one line.
 - **Meeting transcripts/summaries** (Glean `meeting_lookup`, a Webex Meetings connector's
-  `list-recordings`/`get-meeting-summary`, or similar): look for recent meetings involving the
-  partner. Summarize key takeaways, decisions, and action items at a high level — attendee names
-  are fine to include when they're already the named CRM contacts/partner managers in this report,
-  but don't transcribe verbatim exchanges.
+  `list-recordings`/`get-meeting-summary`, an internal notes page already published for the meeting,
+  or similar): look for recent meetings involving the partner. Summarize key takeaways, decisions,
+  and action items at a high level — attendee names are fine to include when they're already the
+  named CRM contacts/partner managers in this report, but don't transcribe verbatim exchanges. **For
+  a summit/EBC/QBR-style meeting specifically, pull two things beyond routine relationship-health
+  color** (confirmed useful on a real Rubrik EBC run, 2026-07-28): the **joint GTM motion or
+  strategic themes discussed** (e.g. a proposed "lead with X, win with Y, close with Z" sequencing,
+  a coalition/program the partner was invited to join, an executive-cadence change) and **named
+  next-steps with owners** that came out of it (e.g. "confirm X with the partner's product team,"
+  "reboot the executive cadence call," each with who owns it). Both are legitimate forward-looking
+  business content for the narrative — not report-building-process narrative — so state them plainly
+  in the body rather than routing them to the appendix.
 - **Slack** (`mcp__*Slack*__slack_search_public_and_private` / `slack_search_channels` /
   `slack_read_channel` / `slack_read_thread`): search for recent internal mentions of the partner
   name. This is usually the best source for relationship-health signals that never make it into
@@ -301,6 +319,48 @@ both "who competes with this partner" and "does WWT already have a relationship 
 - Fold this into the same per-company subagent as the other enrichment work (workflow step 4) —
   don't spin up a separate pass just for this.
 
+## AI/cybersecurity framework alignment (ARMOR)
+
+**Optional, only when the partner is a cybersecurity or AI vendor** (or is pitching an agentic-AI
+product line, e.g. a backup vendor's "AI governance" add-on). Added 2026-07-30 after a real Rubrik
+EBC/partner-summit meeting showed the value of reconciling what gets said about a partner's
+AI-security capabilities against a documented framework, rather than reporting the room's own
+framing at face value.
+
+- **WWT has an internal, vendor-agnostic framework for this: ARMOR** (six domains — governance/
+  risk/compliance, secure AI operations, data protection, model protection, secure development
+  lifecycle, infrastructure security). If a pre-built ARMOR vendor-comparison matrix or scorecard
+  already exists (check `Glean search`/an internal page-hosting service for something like an
+  "ARMOR vendor matrix" or "agentic AI vendor matrix"), cite and reconcile against it rather than
+  scoring the partner from scratch — it's already-vetted research, and re-deriving it per report
+  risks disagreeing with the standing answer.
+- **Don't just transcribe what a meeting or the partner's own materials claim — check whether the
+  claim actually supports the domain it's being credited to.** The confirmed real example: a
+  vendor's "immutable air-gapped architecture" was cited in a meeting as covering Infrastructure
+  Security (isolating the compute/network the AI agent's own runtime executes on), but the actual
+  mechanism is a Data Protection control (backup immutability) — a different domain entirely, with
+  the vendor's own agent-runtime sandboxing explicitly deferred to a third party (e.g. its cloud
+  provider). Flag that kind of category conflation explicitly rather than letting the room's framing
+  stand.
+- **State findings per domain as strong / moderate / gap**, and be precise about *why* something is
+  a gap — "not discussed in this meeting" and "zero public evidence this capability exists" are
+  different claims; don't collapse them into one vague "weak." If most vendors in a product category
+  share the same gap (a common finding for Infrastructure Security among backup/recovery vendors),
+  say so — whoever closes a category-wide gap first owns the differentiated positioning, which is
+  itself a notable finding worth stating.
+- **Cross-check any number against its source before repeating it.** A real discrepancy surfaced
+  this way: a meeting's own notes described a coalition as covering "4-5 of 7 domains" when the
+  authoritative matrix is scoped to 6 domains — flag a mismatch like that rather than silently
+  reproducing either figure, and say plainly that it's unresolved if you can't reconcile it.
+- **This is still a business document** (see the section below) — write findings as plain business
+  facts about the partner's actual capability ("no publicly documented protection for the
+  infrastructure an AI agent's own tools run on" rather than "Infrastructure Security: gap"), citing
+  the framework and matrix by name as a research source (that's normal sourcing, not process
+  narrative) rather than describing how the comparison was performed.
+- Fold this into the same per-company subagent as the other enrichment work (workflow step 4) when
+  it applies — don't spin up a separate pass just for this, and skip it entirely for a partner
+  outside cybersecurity/AI.
+
 ## The report body is a business document — never a data-processing log
 
 **This is the single most important rule in this skill, added 2026-07-27 after a published report
@@ -370,8 +430,12 @@ never skipped, exactly like the data-QA pass — see the renumbered workflow bel
    below), determine public vs. private and — for non-public partners — assess fundraising/
    investors/relative financial strength (see that section below), identify the partner's real
    competitors and check each competitor's own WWT partner standing and pipeline (see the
-   competitive-landscape section below), and write a short narrative blurb combining
-   public-knowledge company context with what internal sources actually show. A forked subagent
+   competitive-landscape section below), for a cybersecurity/AI partner cross-check its
+   capabilities against WWT's ARMOR framework (see that section below), and write a short
+   narrative blurb combining public-knowledge company context with what internal sources actually
+   show — including any joint GTM motion, coalition status, or named next-steps-with-owners
+   surfaced from a summit/EBC/QBR-style meeting (see the meeting-transcripts enrichment bullet
+   above). A forked subagent
    inherits the parent's context, so it only needs its own company's already-known facts plus clear
    scope boundaries (explicitly rule out any name-collision or shared-opportunity risk already
    spotted).
@@ -403,10 +467,13 @@ never skipped, exactly like the data-QA pass — see the renumbered workflow bel
    public company context with any ZoomInfo/document/meeting/Slack signals found, a certifications/
    awards/labs/capabilities list where anything was found, a financial-strength assessment for any
    non-public partner, a competitive-landscape table naming real competitors and their own WWT
-   partner status/pipeline/funding, a callout for anything notable — missing partner manager, zero
-   closed-won, duplicate accounts, a whitespace angle, a relationship-health flag surfaced from
-   Slack, a small partner carrying outsized deal/engagement risk, a better-funded or more-established
-   competitor already inside WWT's ecosystem, etc. — and a top-opportunities table with named
+   partner status/pipeline/funding, an ARMOR domain-alignment readout where the partner is a
+   cybersecurity/AI vendor (see that section above), any joint GTM motion/coalition status/named
+   next-steps-with-owners surfaced from a recent summit/EBC/QBR-style meeting, a callout for anything
+   notable — missing partner manager, zero closed-won, duplicate accounts, a whitespace angle, a
+   relationship-health flag surfaced from Slack, a small partner carrying outsized deal/engagement
+   risk, a better-funded or more-established competitor already inside WWT's ecosystem, a capability
+   gap shared across an entire competitive set, etc. — and a top-opportunities table with named
    contacts), a footer byline, and a "Report processing notes" appendix. If the user has their own
    preferred document style/template, follow that instead but keep the same appendix separation.
    Keep the same summarize-don't-quote judgment from the enrichment step when writing this up — a
