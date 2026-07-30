@@ -45,7 +45,15 @@ partner's own claims and in-room framing against WWT's own institutional framewo
 than transcribing what the room said at face value — a real example that day found a vendor's
 "immutable air-gapped architecture" being informally credited to a domain (Infrastructure Security)
 it doesn't actually cover, when it's really a Data Protection control (see the new "AI/cybersecurity
-framework alignment" section below). See
+framework alignment" section below); extended again 2026-07-30, same day, after a real Gigamon rebuild
+three days after its first run surfaced three more gaps: no check for whether a partner's own revenue
+already qualifies it for a higher WWT partner tier than its CRM record shows (see the new "WWT's own
+partner-tier mechanics" section below — the confirmed real finding was a partner sitting one tier
+below what its own trailing-12-month revenue already cleared); the ARMOR framework-alignment rating
+scale needed a fourth level and a cross-portfolio-complementarity check (a domain gap on one partner
+matched a domain strength on an already-covered WWT partner ecosystem); and reports had no standard
+practice for building charts alongside tables (see the new "Visualizing the data" section below,
+which requires loading the `dataviz` skill first). See
 the "report body is a business document" section and the "Key CRM facts" section below for the
 corrected guidance. See `references/fork-prompt-templates.md` for the exact prompts used and lessons
 learned from that run, and `references/report-template.html` for a ready-to-adapt report template.
@@ -279,6 +287,47 @@ go deeper only for the non-public case.
   bootstrapped/self-funded" — say that plainly rather than reporting an absence of data as if
   nothing could be concluded from it.
 
+## WWT's own partner-tier mechanics — check the promotion math, not just the current tier
+
+Added 2026-07-30 after a real Gigamon run found something a static "current tier" fact would have
+missed entirely: the partner's actual performance already qualified it for the next tier up, and no
+one had filed the paperwork. Reporting a tier as a fact, without checking it against the program's
+own promotion criteria, leaves the single most concrete, mechanically-defined action on the table.
+
+- **Find WWT's own partner-tier ladder** (internal — search Glean/an internal portal for something
+  like "partner alliance hub" or "partner tier revenue") — in the WWT org this is four tiers
+  (Approved/Select/Advantage/Strategic), each gated by a minimum-revenue threshold and each unlocking
+  more commercial machinery than the last (e.g. a named partner manager, then co-marketing funding
+  and a Memorandum of Understanding, then funded joint headcount and a dedicated GTM lead). Confirm
+  the equivalent structure for a different org rather than assuming this one.
+- **Pull the partner's actual revenue against the *next* tier's threshold** — not lifetime cumulative
+  revenue (which can clear every threshold trivially for an old partner and tells you nothing about
+  current performance), but a trailing-12-month or most-recent-full-year figure, matched against
+  whatever period the program actually uses. The confirmed real finding: a partner's CRM tier said
+  Select ($30M+ minimum) while its trailing-12-month revenue was already ~$93M — comfortably past the
+  $75M Advantage threshold. That reframes "help this partner move up a tier" from a pipeline-growth
+  problem into a "file the nomination" problem — a materially different, faster action to recommend.
+- **Pull 2-3 prior years, not just the latest period**, before presenting a threshold-clearing number
+  as settled. A real example: the same partner's revenue dipped sharply the year before jumping past
+  the threshold (a ~3x swing year over year) — worth surfacing as something a tier reviewer doing
+  multi-year diligence will likely ask about, rather than letting the report's own confidence exceed
+  what a skeptical reviewer would accept.
+- **Cross-check the partner's own tier for WWT, not just WWT's tier for the partner.** A real,
+  reportable mismatch: the partner publicly called WWT its top (highest) partner tier and largest
+  global partner, while WWT's own program still ranked that partner in the middle of its own ladder.
+  Name a mismatch like this directly — it's a legitimate finding (and often the sharpest one in the
+  whole report), not just color commentary, and it's a natural forcing function for recommending a
+  tier review.
+- **Watch for internal inconsistencies in WWT's own program materials**, not just the partner's. A
+  real one found: one page's tier-ladder graphic said a given tier already unlocked a named partner
+  manager, while a separate detailed-benefits page said only the two tiers above it did — and the
+  partner in question had neither. Flag a contradiction like this rather than silently picking
+  whichever version supports a cleaner narrative.
+- **This belongs in the business-document body** (see that section below) in plain terms — name the
+  tier, the threshold, and the gap (or lack of one) as a business fact; the underlying program
+  mechanics (which internal portal, which exact query) are process detail for the appendix, not the
+  body.
+
 ## Competitive landscape & competitors' WWT standing
 
 Partner status and pipeline in isolation don't say whether a partner is winning or losing ground —
@@ -342,12 +391,32 @@ framing at face value.
   the vendor's own agent-runtime sandboxing explicitly deferred to a third party (e.g. its cloud
   provider). Flag that kind of category conflation explicitly rather than letting the room's framing
   stand.
-- **State findings per domain as strong / moderate / gap**, and be precise about *why* something is
-  a gap — "not discussed in this meeting" and "zero public evidence this capability exists" are
-  different claims; don't collapse them into one vague "weak." If most vendors in a product category
-  share the same gap (a common finding for Infrastructure Security among backup/recovery vendors),
-  say so — whoever closes a category-wide gap first owns the differentiated positioning, which is
-  itself a notable finding worth stating.
+- **Rate each domain on a 4-level scale, validated on a second real run (Gigamon, 2026-07-30) against
+  the same ARMOR framework**: **Strong** (a specific named technical mechanism in a primary,
+  dedicated source — e.g. a blog post naming the exact architecture) / **Moderate** (a specific
+  mechanism is described, but the only source is secondary/promotional, e.g. a webinar) / **Weak —
+  named, not demonstrated** (the domain is listed as a topic a session or document "covers," with no
+  actual capability described) / **Not addressed** (no claim anywhere — often expected and fine, not
+  itself a black mark, if the domain is genuinely outside the partner's product category). Collapsing
+  "listed as a topic" and "zero evidence" into one vague "weak," or crediting a domain as strong just
+  because a marketing asset names it, both overstate what's actually known — be precise about which
+  of the four applies and why. If most vendors in a product category share the same gap (a common
+  finding for Infrastructure Security among backup/recovery vendors), say so — whoever closes a
+  category-wide gap first owns the differentiated positioning, which is itself a notable finding.
+- **When a domain comes back "not addressed," check whether another named WWT partner already
+  covers it** before treating the gap as just a weakness to report. Confirmed useful twice: a
+  backup-vendor's missing Infrastructure Security coverage pointed to WWT's own microsegmentation/
+  containment partners (Illumio, Elisity, Aqua/Sysdig, Cisco Secure Workload) as the natural fix; a
+  network-visibility vendor's missing Data Protection coverage was the exact inverse of that same
+  backup-vendor gap — visibility partner detects, containment/backup partners cover what it doesn't.
+  A same-portfolio complementarity is a sharper, more actionable finding than an isolated gap, and
+  worth floating explicitly as a cross-sell/coalition angle rather than just noting the absence.
+- **If asked to map a partner against a different framework that WWT did not author** (e.g. MITRE
+  ATLAS, NIST AI RMF, OWASP LLM Top 10 — external, industry-standard catalogs rather than WWT's own
+  ARMOR), the same four-level discipline still applies, but say plainly that the resulting mapping is
+  **this report's own original synthesis**, not an existing WWT/partner joint position — that
+  distinction matters, since a reader could otherwise mistake original analysis for something already
+  vetted and published the way an ARMOR domain with a named source actually is.
 - **Cross-check any number against its source before repeating it.** A real discrepancy surfaced
   this way: a meeting's own notes described a coalition as covering "4-5 of 7 domains" when the
   authoritative matrix is scoped to 6 domains — flag a mismatch like that rather than silently
@@ -409,6 +478,54 @@ banned-term list above and reports every hit verbatim with a suggested business-
 Treat any hit as a hard failure — rewrite the offending sentence and re-run the check. This pass is
 never skipped, exactly like the data-QA pass — see the renumbered workflow below.
 
+## Visualizing the data (infographics)
+
+Added 2026-07-30 after building 5 charts into a real published report. When the publishing
+destination renders HTML (an internal page-hosting service, not a plain-text or markdown drop),
+default to a handful of small charts alongside the tables rather than tables alone — a reader absorbs
+"revenue already cleared the threshold" or "this competitor's number dwarfs everyone else's" faster
+from a bar than from a row of digits.
+
+- **Load the `dataviz` skill before writing any chart code** — this is a hard requirement, not
+  optional guidance, and applies even for a single small bar chart. Follow its procedure (pick the
+  form the data's job calls for; assign color by job, not by preference; validate; mark specs;
+  accessibility) rather than improvising.
+- **Charts that proved useful on a real run, worth defaulting to when the underlying data exists**:
+  a magnitude bar comparing the primary partner against its named competitors (highlight the primary
+  partner, not every bar — see below); a multi-year trend for whatever number the report's
+  headline finding hinges on (e.g. revenue against a tier threshold), with the threshold or target
+  drawn as a reference line so the reader sees the gap, not just the series; a bullet-style bar
+  showing a current value against several named thresholds at once (confirmed effective for the
+  tier-promotion finding above); and a compact status-list companion to any strong/moderate/weak/
+  not-addressed framework table (see the ARMOR section above) — a row of filled/half-filled/outlined/
+  dashed indicators reads faster than a table column of text labels, provided the table itself stays
+  nearby as the accessible detail view.
+- **If the report already has an established single-accent visual style** (as WWT's own "Wire"
+  personal-report style does — one accent color, no exceptions), don't introduce a new multi-hue
+  categorical palette just to color multiple bars. Use accent-color opacity/intensity as the
+  encoding instead (e.g. a sequential magnitude ramp, or one full-opacity bar for the subject of the
+  report against muted bars for everyone else), and put every entity's name directly beside its own
+  mark as a real text label — this satisfies "identity is never color-alone" without breaking the
+  established one-accent constraint. A design system with its own real categorical palette should
+  use it properly instead; this workaround is specifically for reports built to a deliberately
+  monochrome personal style.
+- **Never present a color/opacity encoding as if it means something the data doesn't support.** A
+  real mistake caught before publishing: an early draft of a pipeline-by-stage chart shaded bars
+  light-to-dark implying "closer to close," when the actual stage-maturity order wasn't confirmed —
+  the honest fix was to encode dollar magnitude instead (which the data does support) and drop the
+  maturity claim from the caption entirely, rather than publish a visual implying more certainty than
+  the underlying facts justify.
+- **A native SVG `<title>` element on each mark is enough of a hover layer for a small, static,
+  fully direct-labeled chart** (2-6 data points) — it gives a real tooltip on hover with zero
+  JavaScript, appropriate for a report meant to also work as a PDF/print artifact. Reserve a built
+  interactive layer (crosshair, JS-driven tooltip) for a chart with too many points to label directly,
+  which this kind of report rarely has.
+- **Keep the existing data table next to any chart that replaces or summarizes it** — the chart is a
+  faster first read, the table is the accessible, precise fallback (and the thing a data-QA pass
+  should actually re-verify numbers against). Never let a chart be the only place a number appears.
+- Fold chart-building into the same report-assembly step (workflow step 7) — it isn't a separate
+  research pass, and it happens after the data-QA pass (step 6) confirms the numbers, not before.
+
 ## Workflow
 
 1. **Resolve accounts.** For each company name given, SOSL-search Account as above and confirm
@@ -428,7 +545,9 @@ never skipped, exactly like the data-QA pass — see the renumbered workflow bel
    meeting/Slack signals are available (see the enrichment section above), pull certifications/
    awards/labs/service-capability information including explicit ATC demo status (see that section
    below), determine public vs. private and — for non-public partners — assess fundraising/
-   investors/relative financial strength (see that section below), identify the partner's real
+   investors/relative financial strength (see that section below), check the partner's actual
+   revenue against WWT's own partner-tier thresholds to see whether a tier promotion is already
+   numerically justified (see that section below), identify the partner's real
    competitors and check each competitor's own WWT partner standing and pipeline (see the
    competitive-landscape section below), for a cybersecurity/AI partner cross-check its
    capabilities against WWT's ARMOR framework (see that section below), and write a short
@@ -466,16 +585,20 @@ never skipped, exactly like the data-QA pass — see the renumbered workflow bel
    one section per company (status line including ATC demo status, a short narrative blending
    public company context with any ZoomInfo/document/meeting/Slack signals found, a certifications/
    awards/labs/capabilities list where anything was found, a financial-strength assessment for any
-   non-public partner, a competitive-landscape table naming real competitors and their own WWT
-   partner status/pipeline/funding, an ARMOR domain-alignment readout where the partner is a
-   cybersecurity/AI vendor (see that section above), any joint GTM motion/coalition status/named
-   next-steps-with-owners surfaced from a recent summit/EBC/QBR-style meeting, a callout for anything
-   notable — missing partner manager, zero closed-won, duplicate accounts, a whitespace angle, a
-   relationship-health flag surfaced from Slack, a small partner carrying outsized deal/engagement
-   risk, a better-funded or more-established competitor already inside WWT's ecosystem, a capability
-   gap shared across an entire competitive set, etc. — and a top-opportunities table with named
-   contacts), a footer byline, and a "Report processing notes" appendix. If the user has their own
-   preferred document style/template, follow that instead but keep the same appendix separation.
+   non-public partner, a WWT partner-tier readout naming the gap (or lack of one) to the next tier's
+   revenue threshold (see that section above), a competitive-landscape table naming real competitors
+   and their own WWT partner status/pipeline/funding, an ARMOR domain-alignment readout where the
+   partner is a cybersecurity/AI vendor (see that section above), any joint GTM motion/coalition
+   status/named next-steps-with-owners surfaced from a recent summit/EBC/QBR-style meeting, a callout
+   for anything notable — missing partner manager, zero closed-won, duplicate accounts, a whitespace
+   angle, a relationship-health flag surfaced from Slack, a small partner carrying outsized deal/
+   engagement risk, a better-funded or more-established competitor already inside WWT's ecosystem, a
+   capability gap shared across an entire competitive set, etc. — and a top-opportunities table with
+   named contacts), a footer byline, and a "Report processing notes" appendix. **When publishing to
+   an HTML-rendering destination, add a small number of charts alongside the tables** — see
+   "Visualizing the data" above for which ones tend to earn their keep and how to build them without
+   breaking an established single-accent report style. If the user has their own preferred document
+   style/template, follow that instead but keep the same appendix separation.
    Keep the same summarize-don't-quote judgment from the enrichment step when writing this up — a
    published report is not the place for a verbatim internal Slack message. **Write the body in
    business language only, per the "report body is a business document" section above** — no CRM/
